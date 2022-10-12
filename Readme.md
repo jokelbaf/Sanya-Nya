@@ -11,7 +11,7 @@ You can invite the official version of the bot [here](https://discord.com/api/oa
 List of all bot's commands and their description on russian.
 
 - `ping` - Текущий пинг бота
-- `help` - Вы сейчас тут
+- `help` - Список всех команд, информация о боте
 - `play` - Включить или добавить трек в очередь
 - `stop` - Остановить плеер, отключить бота от ГК
 - `loop` - Зациклить текущий трек
@@ -29,9 +29,11 @@ This bot is completely ready to be hosted on Railway:
 2. Fill `Config.py` with your credentials.
 3. Create an application on [Discord Developer Portal](https://discord.com/developers/applications).
 4. Invite your newly created bot to your server with url which you can generate on application settings page.
-5. Go to [railway.app](https://railway.app), connect your GitHub account and select your cloned repo.
+5. Go to [railway.app](https://railway.app), connect your GitHub account and deploy your cloned repo.
 6. Set your bot token ad an enviromental variable named `BOT_TOKEN` on Railway.
 7. You are done!
+
+**Important:** If you are going to host this bot by yourself, I highly recommend to use **your** lavalink server hosted by **you** or on a **hosting**. I'm too lazy to look for ways of doing it but you should definitely come up with something.
 
 # Additional info
 - Remember that bots that play music from YouTube violate discord rules and will never be verified by discord, and may even be banned.
