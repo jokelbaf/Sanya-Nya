@@ -154,12 +154,13 @@ class Music(commands.Cog):
                         embed=Embeds.Music.music_player_connected(song, ctx, True),
                         mention_author=False
                     )
-                    await msg.edit(
-                        view=Views.Player(self.bot, ctx, msg, vc)
-                    )
 
                     setattr(vc, "message_id", msg.id)
                     setattr(vc, "message", msg)
+
+                    await msg.edit(
+                        view=Views.Player(self.bot, ctx, msg, vc)
+                    )
                 else:
                     try:
                         song = await wavelink.YouTubeTrack.search(query=song, return_first=True)
@@ -524,12 +525,13 @@ class Music(commands.Cog):
                     msg = await ctx.followup.send(
                         embed=Embeds.Music.music_player_connected(song, ctx, True), wait=True
                     )
-                    await msg.edit(
-                        view=Views.Player(self.bot, ctx, msg, vc)
-                    )
 
                     setattr(vc, "message_id", msg.id)
                     setattr(vc, "message", msg)
+
+                    await msg.edit(
+                        view=Views.Player(self.bot, ctx, msg, vc)
+                    )
                 else:
                     try:
                         song = await wavelink.YouTubeTrack.search(query=song, return_first=True)
