@@ -33,4 +33,4 @@ async def on_ready():
         )
         await asyncio.sleep(999)
 
-bot.run(Config.Bot.token())
+bot.run(os.environ.get("BOT_TOKEN"))

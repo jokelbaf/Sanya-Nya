@@ -22,5 +22,3 @@ __pycache__
 .vs/*
 .vscode/*
 .coverage
-logs/settings.json
-Config.py
