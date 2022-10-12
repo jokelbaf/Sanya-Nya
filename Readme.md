@@ -27,3 +27,7 @@ List of all bot's commands and their description on russian.
 - This bot is just a fun project, it contains the code for one of Ari's old modules, which was abandoned due to an update to the discord rules.
 
 - If you found a bug you can create an issue and if i have time i will look through it. Pull requests are also welcome.
+
+# Links
+- **[License](https://github.com/RealSosiso4ka/Sanya-Nya/blob/master/LICENSE)** 
+- **[Requirements](https://github.com/RealSosiso4ka/Sanya-Nya/blob/master/requirements.txt)**
