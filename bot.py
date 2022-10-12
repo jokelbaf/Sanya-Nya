@@ -5,7 +5,8 @@ from Utils.Bot import Logger
 import Config
 
 intents = discord.Intents.all()
-bot = commands.Bot(command_prefix="s!", intents=discord.Intents.all()).remove_command("help")
+bot = commands.Bot(command_prefix="s!", intents=discord.Intents.all())
+bot.remove_command("help")
 
 for filename in os.listdir('./cogs'):
     if filename.endswith('.py'):
