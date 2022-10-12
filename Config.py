@@ -52,10 +52,10 @@ class Icons():
 # application.yml - https://github.com/freyacodes/Lavalink#server-configuration
 class Lavalink():
     def host():
-        return "localhost"
+        return "lavalink.oops.wtf"
     
     def port():
-        return 2333
+        return 443
     
     def password():
-        return "G-55df_345an-51Lk_Q"
+        return "www.freelavalink.ga"
