@@ -20,7 +20,6 @@ for filename in os.listdir('./cogs'):
 
 @bot.event
 async def on_ready():
-    Logger.on_ready()
     Logger.log("SANYA", "INFO", f"Выполнен вход в систему как {bot.user.name} с ID {bot.user.id}")
     while not bot.is_closed(): 
         await bot.change_presence(
