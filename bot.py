@@ -1,11 +1,15 @@
-import discord, os, logging
+import asyncio
+import discord, os
 from discord.ext import commands
 from Utils.Bot import Logger
 
 import Config
 
-intents = discord.Intents.all()
-bot = commands.Bot(command_prefix="s!", intents=discord.Intents.all())
+intents = discord.Intents.default()
+intents.members = True
+intents.message_content = True
+
+bot = commands.Bot(command_prefix="s!", intents=intents)
 bot.remove_command("help")
 
 for filename in os.listdir('./cogs'):
@@ -27,5 +31,6 @@ async def on_ready():
                 name=f"тебе в душу"
             )
         )
+        await asyncio.sleep(50)
 
 bot.run(Config.Bot.token())
