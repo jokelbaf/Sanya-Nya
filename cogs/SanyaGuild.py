@@ -1,3 +1,5 @@
+"""Commands for bot owner only."""
+
 import discord, os, traceback
 from discord.ext import commands
 
@@ -5,11 +7,6 @@ from discord.ext import commands
 class BotGuild(commands.Cog):
     def __init__(self, bot: discord.Bot):
         self.bot = bot
-    
-    @commands.command()
-    @commands.is_owner()
-    async def traceback(self, ctx: commands.Context):
-        await ctx.reply(f"```{traceback.format_exc()}```", mention_author=False)
     
     @commands.command(
         aliases=["cog"]

@@ -7,7 +7,7 @@ from datetime import datetime as dt
 import Config
 
 class BotInfo():
-    def help():
+    def help(bot: commands.Bot):
         embed = discord.Embed(
             color=0xebd8c3,
             title="Помощь",
@@ -24,7 +24,7 @@ class BotInfo():
         )
         embed.add_field(
             name="Префикс",
-            value="`s!`",
+            value="`" + bot.command_prefix + "`",
             inline=False
         )
         embed.add_field(
@@ -33,7 +33,7 @@ class BotInfo():
             inline=False
         )
         embed.set_footer(
-            text="Все права ̶з̶а̶щ̶и̶щ̶е̶н̶ы̶  я съел"
+            text="Все права ̶з̶а̶щ̶и̶щ̶е̶н̶ы̶  съедены"
         )
         embed.set_image(
             url="https://media.tenor.com/images/9c93248d94cfc9fb4a6895f6f08c7b61/tenor.gif"

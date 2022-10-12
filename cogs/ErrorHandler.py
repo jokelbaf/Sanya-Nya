@@ -3,8 +3,7 @@ from discord.ext import commands
 
 from Utils.Bot import Logger
 
-
-
+# Quite useles in its current form
 class ErrorHandler(commands.Cog):
     def __init__(self, bot):
         self.bot = bot

@@ -37,7 +37,7 @@ class SanyaInfo(commands.Cog):
     async def help(self, ctx: discord.ApplicationContext):
         await ctx.defer()
         return await ctx.followup.send(
-            embed=Embeds.BotInfo.help()
+            embed=Embeds.BotInfo.help(self.bot)
         )
 
     @commands.command(
@@ -47,7 +47,7 @@ class SanyaInfo(commands.Cog):
         async with ctx.typing():
             await asyncio.sleep(0.1)
         return await ctx.reply(
-            embed=Embeds.BotInfo.help(),
+            embed=Embeds.BotInfo.help(self.bot),
             mention_author=False
         )
 
