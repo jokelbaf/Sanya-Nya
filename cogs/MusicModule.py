@@ -14,7 +14,7 @@ def command_log(ctx: commands.Context, command: str):
 def slash_command_log(ctx: commands.Context, command: str):
     Logger.log("MUSIC", "SLASH-COMMAND", f'Пользователь {ctx.author.name} ({ctx.author.id}) Использовал слэш-команду "{command}". ID Сервера - {ctx.guild.id}')
 
-def command_error_log(ctx: commands.Context | discord.ApplicationContext, error: str, command: str, cmd_type: str):
+def command_error_log(ctx: discord.ApplicationContext, error: str, command: str, cmd_type: str):
     if cmd_type == "default":
         cmd = "команда"
     else:

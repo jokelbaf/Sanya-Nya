@@ -3,8 +3,6 @@ import discord, os
 from discord.ext import commands
 from Utils.Bot import Logger
 
-import Config
-
 intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
