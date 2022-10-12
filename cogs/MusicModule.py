@@ -157,6 +157,9 @@ class Music(commands.Cog):
                     await msg.edit(
                         view=Views.Player(self.bot, ctx, msg, vc)
                     )
+
+                    setattr(vc, "message_id", msg.id)
+                    setattr(vc, "message", msg)
                 else:
                     try:
                         song = await wavelink.YouTubeTrack.search(query=song, return_first=True)
@@ -524,6 +527,9 @@ class Music(commands.Cog):
                     await msg.edit(
                         view=Views.Player(self.bot, ctx, msg, vc)
                     )
+
+                    setattr(vc, "message_id", msg.id)
+                    setattr(vc, "message", msg)
                 else:
                     try:
                         song = await wavelink.YouTubeTrack.search(query=song, return_first=True)

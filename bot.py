@@ -31,6 +31,6 @@ async def on_ready():
                 name=f"тебе в душу"
             )
         )
-        await asyncio.sleep(50)
+        await asyncio.sleep(999)
 
 bot.run(Config.Bot.token())
