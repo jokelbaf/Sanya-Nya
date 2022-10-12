@@ -455,7 +455,7 @@ class Music():
     def player_destroyed():
         embed = discord.Embed(
             color=0xdd5f65,
-            title="<:av_cross:1028254583534915674> Плеер Отключён",
+            title="Плеер Отключён",
             description="Этот музыкальный плеер был отключён из-за неактивности."
         )
         return embed
@@ -471,7 +471,7 @@ class Music():
     def channel_is_empty():
         embed = discord.Embed(
             color=0xdd5f65,
-            title="<:av_cross:1028254583534915674> Плеер отключён",
+            title="Плеер отключён",
             description="Все пользователи покинули голосовой канал. Плеер отключён."
         )
         return embed
