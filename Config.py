@@ -27,7 +27,7 @@ class Bot():
                 ["skip", "Пропустить трек"],
                 ["queue", "Просмотр очереди треков"],
                 ["pause", "Остановить проигрывание"],
-                ["status", "Информация о текущем статусе бота"]
+                ["status", "Информация о текущем статусе бота"],
                 ["volume", "Изменить громкость плеера"],
                 ["resume", "Возобновить проигрывание"],
                 ["replay", "Проиграть текущий трек заново"],
@@ -43,7 +43,7 @@ class Bot():
                 ["skip", "Skip track"],
                 ["queue", "View current tracks queue"],
                 ["pause", "Pause playback"],
-                ["status", "Info about current bot status"]
+                ["status", "Info about current bot status"],
                 ["volume", "Change player volume"],
                 ["resume", "Resume playback"],
                 ["replay", "Replay track"],
