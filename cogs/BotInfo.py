@@ -79,9 +79,9 @@ class SanyaInfo(commands.Cog):
         await ctx.defer()
 
         class LinkButton(discord.ui.View):
-            def __init__(self):
+            def __init__(self, bot: discord.Bot):
                 super().__init__()
-                self.add_item(discord.ui.Button(label="Важная информация" if Functions.get_locale(self.bot, ctx) == "ru" else "Important info", url="https://www.youtube.com/watch?v=dQw4w9WgXcQ&ab_channel=RickAstley"))
+                self.add_item(discord.ui.Button(label="Важная информация" if Functions.get_locale(bot, ctx) == "ru" else "Important info", url="https://www.youtube.com/watch?v=dQw4w9WgXcQ&ab_channel=RickAstley"))
 
         uptime = datetime.now() - self.bot.start_time
         hours = int(uptime.seconds / 3600)
@@ -106,7 +106,7 @@ class SanyaInfo(commands.Cog):
                 guilds = len(self.bot.guilds), 
                 channels = channels
             ),
-            view=LinkButton()
+            view=LinkButton(self.bot)
         )
 
     @commands.command(
@@ -117,9 +117,9 @@ class SanyaInfo(commands.Cog):
             await asyncio.sleep(0.1)
 
         class LinkButton(discord.ui.View):
-            def __init__(self):
+            def __init__(self, bot: discord.Bot):
                 super().__init__()
-                self.add_item(discord.ui.Button(label="Важная информация" if Functions.get_locale(self.bot, ctx) == "ru" else "Important info", url="https://www.youtube.com/watch?v=dQw4w9WgXcQ&ab_channel=RickAstley"))
+                self.add_item(discord.ui.Button(label="Важная информация" if Functions.get_locale(bot, ctx) == "ru" else "Important info", url="https://www.youtube.com/watch?v=dQw4w9WgXcQ&ab_channel=RickAstley"))
 
         uptime = datetime.now() - self.bot.start_time
         hours = int(uptime.seconds / 3600)
@@ -144,7 +144,7 @@ class SanyaInfo(commands.Cog):
                 guilds = len(self.bot.guilds), 
                 channels = channels
             ),
-            view=LinkButton(),
+            view=LinkButton(self.bot),
             mention_author=False
         )
 
