@@ -6,7 +6,7 @@ class Bot():
     # Bot language. Can be set to russian (ru) or english (en)
     # You can make it through the database but im too lazy for this
     def language():
-        return "en"
+        return "ru"
 
     # 0 - No actions will be logged
     # 1 - Actions will be logged to console only
