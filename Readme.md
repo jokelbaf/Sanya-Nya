@@ -43,7 +43,7 @@ This bot is completely ready to be hosted on Railway:
 
 - If you found a bug you can create an issue and if I have time I will look through it. Pull requests are also welcome.
 
-- To change language of the Bot, go to `Config.py, line 9` and it to either `ru` or `en`. You can actually implement database to change language per guild/user but I'm too lazy for this shit.
+- To change language of the Bot, go to `Config.py, line 9` and change it to either `ru` or `en`. You can actually implement database to change language per guild/user but I'm too lazy for this shit.
 
 # Links
 - **[License](https://github.com/RealSosiso4ka/Sanya-Nya/blob/master/LICENSE)** 
