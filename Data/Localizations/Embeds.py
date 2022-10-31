@@ -132,7 +132,7 @@ class BotInfo():
                 timestamp=dt.now()
             )
             embed.add_field(
-                name="Аптайм:",
+                name="Uptime:",
                 value=f"```{uptime_days} days, {uptime_hours} hours```",
                 inline=False
             )
