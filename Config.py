@@ -2,11 +2,38 @@
 images, Bot configuration like «Developer Mode» and 
 some permament data like links and credentials."""
 
+import discord
+
 class Bot():
-    # Bot language. Can be set to russian (ru) or english (en)
-    # You can make it through the database but im too lazy for this
+    # Bot language. Can be set to russian (ru), english (en), or auto
+
+    # If language is set to auto:
+    # 
+    # 1. Bot will try to detect user's client language
+    #
+    # 2. If it's impossibe to detect client language (e.g. in prefixed commands), 
+    # bot will try to use guild preffered language
+    #
+    # 3. If event guild preffered language is not defined (e.g. in DM's), bot
+    # will try to get language from cache
+    #
+    # 4. If language is still not defined, bot will use alternative language
+    # which you can set below
     def language():
+        return "auto"
+
+    # Used if language /\ is set to auto and it's impossible to detect client language
+    # Can be set to russian (ru) or english (en)
+    def alternative_language():
         return "ru"
+
+    # The time that the user's locale will be stored in the bot's cache
+    def cache_time():
+        return 900
+
+    # Max amount of users that can be stored in cache at the same time
+    def max_cached_users():
+        return 1000
 
     # 0 - No actions will be logged
     # 1 - Actions will be logged to console only
@@ -15,7 +42,7 @@ class Bot():
     def logs_lvl():
         return 3
 
-    # Descriptions for all commands (Displayed in /help command)
+    # Descriptions for all commands (Displayed in help command)
     def commands(language: str):
         if language == "ru":
             return [
@@ -50,14 +77,13 @@ class Bot():
                 ["previous", "Play previous track"]
             ]
 
+    # You can change bot prefix here.
+    def prefix():
+        return "s!"
 
-class Logs(): 
-    def data():
-        data = {
-            "logs_lvl": Bot.logs_lvl(),
-            "logs_file": None
-        }
-        return data
+    # Bot presence type and name (text)
+    def presence():
+        return [discord.ActivityType.watching, "тебе в душу"]
 
 
 class Icons():

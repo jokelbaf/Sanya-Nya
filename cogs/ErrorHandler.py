@@ -1,9 +1,10 @@
 import discord
 from discord.ext import commands
 
-from Utils.Bot import Logger
+from Data.Localizations import Embeds
+from Utils.Bot import Logger, Functions
 
-# Quite useles in its current form
+# For handling most common errors
 class ErrorHandler(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -11,11 +12,19 @@ class ErrorHandler(commands.Cog):
     
     @commands.Cog.listener()
     async def on_command_error(self, ctx: commands.Context, error: discord.DiscordException):
+        if isinstance(error, commands.NoPrivateMessage):
+            return await ctx.reply(
+                embed=Embeds.ErrorHandler.dm_not_supported(Functions.get_locale(self.bot, ctx)), mention_author=False
+            )
+        
         Logger.log("ERROR", "COMMAND", f"Критическая ошибка при использовании команды {ctx.command.qualified_name}.")
         return Logger.log_traceback()
 
     @commands.Cog.listener()
     async def on_application_command_error(self, ctx: discord.ApplicationContext, error: discord.DiscordException):
+        if isinstance(error, commands.NoPrivateMessage):
+            return await ctx.respond(embed=Embeds.ErrorHandler.dm_not_supported(Functions.get_locale(self.bot, ctx)), ephemeral=True)
+
         Logger.log("ERROR", "S-COMMAND", f"Критическая ошибка при использовании слэш-команды {ctx.command.qualified_name}.")
         return Logger.log_traceback()
 

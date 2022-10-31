@@ -8,7 +8,7 @@ This is a repo with source for Sanya-nya discord bot. It plays music from YouTub
 You can invite the official version of the bot [here](https://discord.com/api/oauth2/authorize?client_id=1028248893600841748&permissions=2184563712&scope=bot%20applications.commands).
 
 # Commands
-List of all bot's commands and their description on russian.
+List of all bot's commands and their description.
 
 - `ping` - Current Sanya's ping
 - `help` - List of all bot commands and it's prefix
@@ -43,7 +43,7 @@ This bot is completely ready to be hosted on Railway:
 
 - If you found a bug you can create an issue and if I have time I will look through it. Pull requests are also welcome.
 
-- To change language of the Bot, go to `Config.py, line 9` and change it to either `ru` or `en`. You can actually implement database to change language per guild/user but I'm too lazy for this shit.
+- To change language of the Bot, go to `Config.py, line 22` and change it to `ru` or `en` or `auto`. If you set language to `auto`, Sanya will use either client or guild language (more info in config).
 
 # Links
 - **[License](https://github.com/RealSosiso4ka/Sanya-Nya/blob/master/LICENSE)** 
