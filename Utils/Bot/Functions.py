@@ -7,11 +7,11 @@ def update_cache(bot: discord.Bot, user: discord.User, locale: str) -> None:
     bot.users_cache[user.id] = locale
     return
 
-def get_cache(bot: discord.Bot, user: discord.User) -> str | None:
+def get_cache(bot: discord.Bot, user: discord.User) -> str:
     cache: TTLCache = bot.users_cache
     return cache.get(user.id)
 
-def get_locale(bot: discord.Bot, ctx: discord.ApplicationContext | commands.Context | discord.Interaction) -> Literal["ru", "en"]:
+def get_locale(bot: discord.Bot, ctx) -> Literal["ru", "en"]:
     if Config.Bot.language() != "auto":
         return Config.Bot.language()
     if isinstance(ctx, discord.ApplicationContext) or isinstance(ctx, discord.Interaction):
