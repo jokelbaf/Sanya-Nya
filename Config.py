@@ -3,6 +3,11 @@ images, Bot configuration like «Developer Mode» and
 some permament data like links and credentials."""
 
 class Bot():
+    # Bot language. Can be set to russian (ru) or english (en)
+    # You can make it through the database but im too lazy for this
+    def language():
+        return "en"
+
     # 0 - No actions will be logged
     # 1 - Actions will be logged to console only
     # 2 - Actions will be logged to txt file in ./logs/{time}.txt
@@ -11,23 +16,41 @@ class Bot():
         return 3
 
     # Descriptions for all commands (Displayed in /help command)
-    def commands():
-        return [
-            ["ping", "Текущий пинг бота"],
-            ["help", "Вы сейчас тут"],
-            ["play", "Включить или добавить трек в очередь"],
-            ["stop", "Остановить плеер, отключить бота от ГК"],
-            ["loop", "Зациклить текущий трек"],
-            ["skip", "Пропустить трек"],
-            ["queue", "Просмотр очереди треков"],
-            ["pause", "Остановить проигрывание"],
-            ["volume", "**Не используйте**, __эта команда ломает бота__"],
-            ["resume", "Возобновить проигрывание"],
-            ["replay", "Проиграть текущий трек заново"],
-            ["previous", "Включить предыдущий трек"]
-        ]
+    def commands(language: str):
+        if language == "ru":
+            return [
+                ["ping", "Текущий пинг бота"],
+                ["help", "Вы сейчас тут"],
+                ["play", "Включить или добавить трек в очередь"],
+                ["stop", "Остановить плеер, отключить бота от ГК"],
+                ["loop", "Зациклить текущий трек"],
+                ["skip", "Пропустить трек"],
+                ["queue", "Просмотр очереди треков"],
+                ["pause", "Остановить проигрывание"],
+                ["status", "Информация о текущем статусе бота"]
+                ["volume", "Изменить громкость плеера"],
+                ["resume", "Возобновить проигрывание"],
+                ["replay", "Проиграть текущий трек заново"],
+                ["previous", "Включить предыдущий трек"]
+            ]
+        else:
+            return [
+                ["ping", "Current Sanya's ping"],
+                ["help", "You are here right now"],
+                ["play", "Play or add track to the queue"],
+                ["stop", "Stop player, disconnect bot from VC"],
+                ["loop", "Loop current track"],
+                ["skip", "Skip track"],
+                ["queue", "View current tracks queue"],
+                ["pause", "Pause playback"],
+                ["status", "Info about current bot status"]
+                ["volume", "Change player volume"],
+                ["resume", "Resume playback"],
+                ["replay", "Replay track"],
+                ["previous", "Play previous track"]
+            ]
 
-# Idk why did I make it like this :/
+
 class Logs(): 
     def data():
         data = {

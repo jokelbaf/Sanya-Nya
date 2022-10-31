@@ -9,37 +9,37 @@ from Utils.Bot import Logger
 
 
 def command_log(ctx: commands.Context, command: str):
-    Logger.log("MUSIC", "COMMAND", f'Пользователь {ctx.author.name} ({ctx.author.id}) Использовал команду "{command}". ID Сервера - {ctx.guild.id}')
+    Logger.log("MUSIC", "COMMAND", f'User {ctx.author.name} ({ctx.author.id}) used "{command}" command. Guild ID - {ctx.guild.id}')
     
 def slash_command_log(ctx: commands.Context, command: str):
-    Logger.log("MUSIC", "SLASH-COMMAND", f'Пользователь {ctx.author.name} ({ctx.author.id}) Использовал слэш-команду "{command}". ID Сервера - {ctx.guild.id}')
+    Logger.log("MUSIC", "SLASH-COMMAND", f'User {ctx.author.name} ({ctx.author.id}) used slash command "{command}". Guild ID - {ctx.guild.id}')
 
 def command_error_log(ctx: discord.ApplicationContext, error: str, command: str, cmd_type: str):
     if cmd_type == "default":
-        cmd = "команда"
+        cmd = "command"
     else:
-        cmd = "слэш-команда"
+        cmd = "slash command"
         
     if command == "play":
-        Logger.log("MUSIC", "ERROR", f"Ошибка при попытке включить трек ({cmd}): {error} (ID Сервера: {ctx.guild.id})")
+        Logger.log("MUSIC", "ERROR", f"Error on track play ({cmd}): {error} (Guild ID: {ctx.guild.id})")
     elif command == "replay":
-        Logger.log("MUSIC", "ERROR", f"Ошибка при попытке включить проигрывание трека с начала ({cmd}): {error} (ID Сервера: {ctx.guild.id})")
+        Logger.log("MUSIC", "ERROR", f"Error on trach replay ({cmd}): {error} (Guild ID: {ctx.guild.id})")
     elif command == "pause":
-        Logger.log("MUSIC", "ERROR", f"Ошибка при попытке поставить трек на паузу ({cmd}): {error} (ID Сервера: {ctx.guild.id})")
+        Logger.log("MUSIC", "ERROR", f"Error on player pause ({cmd}): {error} (Guild ID: {ctx.guild.id})")
     elif command == "resume":
-        Logger.log("MUSIC", "ERROR", f"Ошибка при попытке возобновить проигрывание трека ({cmd}): {error} (ID Сервера: {ctx.guild.id})")
+        Logger.log("MUSIC", "ERROR", f"Error on player resume ({cmd}): {error} (Guild ID: {ctx.guild.id})")
     elif command == "skip":
-        Logger.log("MUSIC", "ERROR", f"Ошибка при попытке пропустить трек ({cmd}): {error} (ID Сервера: {ctx.guild.id})")
+        Logger.log("MUSIC", "ERROR", f"Error on track skip ({cmd}): {error} (Guild ID: {ctx.guild.id})")
     elif command == "stop":
-        Logger.log("MUSIC", "ERROR", f"Ошибка при попытке отключить плеер ({cmd}): {error} (ID Сервера: {ctx.guild.id})")
+        Logger.log("MUSIC", "ERROR", f"Error on player stop ({cmd}): {error} (Guild ID: {ctx.guild.id})")
     elif command == "previous":
-        Logger.log("MUSIC", "ERROR", f"Ошибка при попытке включить предыдущий трек ({cmd}): {error} (ID Сервера: {ctx.guild.id})")
+        Logger.log("MUSIC", "ERROR", f"Error on previous track play ({cmd}): {error} (Guild ID: {ctx.guild.id})")
     elif command == "queue":
-        Logger.log("MUSIC", "ERROR", f"Ошибка при попытке отобразить очередь треков ({cmd}): {error} (ID Сервера: {ctx.guild.id})")
+        Logger.log("MUSIC", "ERROR", f"Error in queue command ({cmd}): {error} (Guild ID: {ctx.guild.id})")
     elif command == "loop":
-        Logger.log("MUSIC", "ERROR", f"Ошибка при попытке зациклить трек ({cmd}): {error} (ID Сервера: {ctx.guild.id})")
+        Logger.log("MUSIC", "ERROR", f"Error on track loop ({cmd}): {error} (Guild ID: {ctx.guild.id})")
     elif command == "volume":
-        Logger.log("MUSIC", "ERROR", f"Ошибка при попытке изменить громкость плеера ({cmd}): {error} (ID Сервера: {ctx.guild.id})")
+        Logger.log("MUSIC", "ERROR", f"Error on player volume change ({cmd}): {error} (Guild ID: {ctx.guild.id})")
         
 
 class Music(commands.Cog):
@@ -54,11 +54,11 @@ class Music(commands.Cog):
 
     @commands.Cog.listener()
     async def on_wavelink_node_ready(self, node: wavelink.Node):
-        Logger.log("WAVELINK", "INFO", f"Интеграция подключена с ID: {node.identifier}")
+        Logger.log("WAVELINK", "INFO", f"Integration connected with ID: {node.identifier}")
 
     @commands.Cog.listener()
     async def on_wavelink_websocket_closed(self, player: wavelink.Player, reason, code):
-        Logger.log("WAVELINK", "WARNING", f"Интеграция отключена из-за ошибки сервера ({code}). Причина: {reason}")
+        Logger.log("WAVELINK", "WARNING", f"Integration disconnected cause of server error ({code}). Reason: {reason}")
     
     @commands.Cog.listener()
     async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
@@ -72,7 +72,7 @@ class Music(commands.Cog):
             vc.cleanup()
             await vc.disconnect()
                 
-            Logger.log("MUSIC", "INFO", f"Все пользователи покинули голосовой канал сервера {member.guild.id}. Бот отключён.")
+            Logger.log("MUSIC", "INFO", f"All users left VC of guild with ID {member.guild.id}. Bot disconnected.")
 
             try:
                 await vc.message.edit(embed=Embeds.Music.channel_is_empty(), view=None)
@@ -111,10 +111,10 @@ class Music(commands.Cog):
             next_song = vc.queue.get()
 
             await vc.play(next_song)
-            await vc.message.edit(embed=Embeds.Music.music_player_connected(next_song, ctx, True))
+            await vc.message.edit(embed=Embeds.Music.music_player_connected(next_song, ctx))
 
         except Exception as error:
-            Logger.log("WAVELINK", "ERROR", f"Ошибка в ивенте on_wavelink_track_end: {error}")
+            Logger.log("WAVELINK", "ERROR", f"Error in on_wavelink_track_end event: {error}")
             Logger.log_traceback()
 
     @commands.command(
@@ -151,7 +151,7 @@ class Music(commands.Cog):
 
                     await vc.play(song)
                     msg = await ctx.reply(
-                        embed=Embeds.Music.music_player_connected(song, ctx, True),
+                        embed=Embeds.Music.music_player_connected(song, ctx),
                         mention_author=False
                     )
 
@@ -164,8 +164,8 @@ class Music(commands.Cog):
                 else:
                     try:
                         song = await wavelink.YouTubeTrack.search(query=song, return_first=True)
-                        await vc.message.edit(embed=Embeds.Music.music_player_connected(song, ctx, True))
-                        await ctx.reply(embed=Embeds.Music.track_added_ctx(ctx, song, True), mention_author=False)
+                        await vc.message.edit(embed=Embeds.Music.music_player_connected(song, ctx))
+                        await ctx.reply(embed=Embeds.Music.track_added_ctx(ctx, song), mention_author=False)
                         await vc.play(song)
                     except:
                         msg = await ctx.reply(embed=Embeds.Music.choose_platform(), mention_author=False)
@@ -177,7 +177,7 @@ class Music(commands.Cog):
             else:
                 song = await wavelink.YouTubeTrack.search(query=song, return_first=True)
                 await vc.queue.put_wait(song)
-                await ctx.reply(embed=Embeds.Music.track_added_ctx(ctx, song, True), mention_author=False)
+                await ctx.reply(embed=Embeds.Music.track_added_ctx(ctx, song), mention_author=False)
 
             vc.ctx = ctx
             if not hasattr(vc, "loop"):
@@ -309,7 +309,7 @@ class Music(commands.Cog):
             await vc.seek(position=postition)
             song = vc.track
 
-            await vc.message.edit(embed=Embeds.Music.music_player_connected(song, ctx, True))
+            await vc.message.edit(embed=Embeds.Music.music_player_connected(song, ctx))
             if vc.notifications_level in [1, 2]:
                 return await ctx.reply(embed=Embeds.Music.ctx_skipped(), mention_author=False)
 
@@ -388,7 +388,7 @@ class Music(commands.Cog):
                 postition = int(vc.track.length) * 10000
                 await vc.seek(position=postition)
 
-                await vc.message.edit(embed=Embeds.Music.music_player_connected(previous_track, ctx, True))
+                await vc.message.edit(embed=Embeds.Music.music_player_connected(previous_track, ctx))
                 if vc.notifications_level in [1, 2]:
                     return await ctx.reply(embed=Embeds.Music.returned_ctx(), mention_author=False)
             else:
@@ -523,7 +523,7 @@ class Music(commands.Cog):
 
                     await vc.play(song)
                     msg = await ctx.followup.send(
-                        embed=Embeds.Music.music_player_connected(song, ctx, True), wait=True
+                        embed=Embeds.Music.music_player_connected(song, ctx), wait=True
                     )
 
                     setattr(vc, "message_id", msg.id)
@@ -535,8 +535,8 @@ class Music(commands.Cog):
                 else:
                     try:
                         song = await wavelink.YouTubeTrack.search(query=song, return_first=True)
-                        await vc.message.edit(embed=Embeds.Music.music_player_connected(song, ctx, True))
-                        await ctx.followup.send(embed=Embeds.Music.track_added_ctx(ctx, song, True))
+                        await vc.message.edit(embed=Embeds.Music.music_player_connected(song, ctx))
+                        await ctx.followup.send(embed=Embeds.Music.track_added_ctx(ctx, song))
                         await vc.play(song)
                     except:
                         msg = await ctx.followup.send(embed=Embeds.Music.choose_platform())
@@ -548,7 +548,7 @@ class Music(commands.Cog):
             else:
                 song = await wavelink.YouTubeTrack.search(query=song, return_first=True)
                 await vc.queue.put_wait(song)
-                await ctx.followup.send(embed=Embeds.Music.track_added_ctx(ctx, song, True))
+                await ctx.followup.send(embed=Embeds.Music.track_added_ctx(ctx, song))
 
             vc.ctx = ctx
             if not hasattr(vc, "loop"):
@@ -652,7 +652,7 @@ class Music(commands.Cog):
             await vc.seek(position=postition)
             song = vc.track
 
-            await vc.message.edit(embed=Embeds.Music.music_player_connected(song, ctx, True))
+            await vc.message.edit(embed=Embeds.Music.music_player_connected(song, ctx))
             if vc.notifications_level in [1, 2]:
                 return await ctx.followup.send(embed=Embeds.Music.ctx_skipped())
 
@@ -731,7 +731,7 @@ class Music(commands.Cog):
                 postition = int(vc.track.length) * 10000
                 await vc.seek(position=postition)
 
-                await vc.message.edit(embed=Embeds.Music.music_player_connected(previous_track, ctx, True))
+                await vc.message.edit(embed=Embeds.Music.music_player_connected(previous_track, ctx))
                 if vc.notifications_level in [1, 2]:
                     return await ctx.followup.send(embed=Embeds.Music.returned_ctx())
             else:

@@ -1,6 +1,6 @@
 ![Image](https://media.discordapp.net/attachments/1029785771839864852/1029785831180877864/banner.gif) 
 
-![](https://img.shields.io/badge/bot_version-v1.0.2-%23ebd8c3?style=for-the-badge&logo=python&logoColor=white)  ![](https://img.shields.io/badge/bot_language-russian-%23c5d9d7?style=for-the-badge)
+![](https://img.shields.io/badge/bot_version-v1.0.2-%23ebd8c3?style=for-the-badge&logo=python&logoColor=white)  ![](https://img.shields.io/badge/bot_language-russian_/_english-%23c5d9d7?style=for-the-badge)
 ****
 
 This is a repo with source for Sanya-nya discord bot. It plays music from YouTube and works both on slash and prefixed commands.
@@ -10,18 +10,19 @@ You can invite the official version of the bot [here](https://discord.com/api/oa
 # Commands
 List of all bot's commands and their description on russian.
 
-- `ping` - Текущий пинг бота
-- `help` - Список всех команд, информация о боте
-- `play` - Включить или добавить трек в очередь
-- `stop` - Остановить плеер, отключить бота от ГК
-- `loop` - Зациклить текущий трек
-- `skip` - Пропустить трек
-- `queue` - Просмотр очереди треков
-- `pause` - Остановить проигрывание
-- `volume` - Изменение громкости
-- `resume` - Возобновить проигрывание
-- `replay` - Проиграть текущий трек заново
-- `previous` - Включить предыдущий трек
+- `ping` - Current Sanya's ping
+- `help` - List of all bot commands and it's prefix
+- `play` - Play/Add song to the queue
+- `stop` - Stop player, disconnect from VC
+- `loop` - Loop current track
+- `skip` - Skip current track
+- `queue` - View current track queue
+- `pause` - Pause player playback
+- `status` - Info about current Bot status
+- `volume` - Change player volume
+- `resume` - Resume playback
+- `replay` - Replay current track
+- `previous` - Play previous track
 
 # Hosting bot by yourself
 This bot is completely ready to be hosted on Railway: 
@@ -41,6 +42,8 @@ This bot is completely ready to be hosted on Railway:
 - This bot is just a fun project, it contains the code for one of Ari's old modules, which was abandoned due to an update to the discord rules.
 
 - If you found a bug you can create an issue and if I have time I will look through it. Pull requests are also welcome.
+
+- To change language of the Bot, go to `Config.py, line 9` and it to either `ru` or `en`. You can actually implement database to change language per guild/user but I'm too lazy for this shit.
 
 # Links
 - **[License](https://github.com/RealSosiso4ka/Sanya-Nya/blob/master/LICENSE)** 

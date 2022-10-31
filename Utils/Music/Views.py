@@ -1,6 +1,6 @@
 """All Functions and modals for Music module."""
 
-import discord, wavelink
+import discord, wavelink, Config
 from discord.ext import commands
 from discord.ui import InputText, Modal
 
@@ -9,7 +9,7 @@ from Utils.Bot import Logger
 
 
 def action_log(r: discord.Interaction, action: str):
-    Logger.log("MUSIC", "INTERACTION", f'Пользователь {r.user.name} ({r.user.id}) {action}. ID Сервера - {r.guild.id}')
+    Logger.log("MUSIC", "INTERACTION", f'User {r.user.name} ({r.user.id}) {action}. Guild ID - {r.guild.id}')
 
 
 class SongModal(Modal):
@@ -18,12 +18,12 @@ class SongModal(Modal):
         self.ctx = ctx
         self.vc = vc
         self.msg = msg
-        super().__init__(title="Добавить песню в очередь")
+        super().__init__(title="Добавить песню в очередь" if Config.Bot.language() == "ru" else "Add track to the queue")
 
         self.add_item(
             InputText(
-                label="Трек",
-                placeholder="Ссылка или название трека (YouTube).",
+                label="Трек" if Config.Bot.language() == "ru" else "Song",
+                placeholder="Ссылка или название трека (YouTube)." if Config.Bot.language() == "ru" else "Song link or YouTube url.",
                 style=discord.InputTextStyle.short,
             )
         )
@@ -48,20 +48,20 @@ class SongModal(Modal):
 
             if vc.queue.is_empty and not vc.is_playing():
                 await vc.play(song)
-                await self.msg.edit(embed=Embeds.Music.music_player_connected(song, self.ctx, True))
+                await self.msg.edit(embed=Embeds.Music.music_player_connected(song, self.ctx))
                 if vc.notifications_level == 2:
-                    return await r.followup.send(embed=Embeds.Music.track_added_to_play(r, song, True))
+                    return await r.followup.send(embed=Embeds.Music.track_added_to_play(r, song))
                 else:
-                    return await r.followup.send(embed=Embeds.Music.self_track_added_to_play(r, song, True), ephemeral=True)
+                    return await r.followup.send(embed=Embeds.Music.self_track_added_to_play(r, song), ephemeral=True)
             else:
                 await vc.queue.put_wait(song)
                 if vc.notifications_level == 2:
-                    return await r.followup.send(embed=Embeds.Music.track_added(r, song, True))
+                    return await r.followup.send(embed=Embeds.Music.track_added(r, song))
                 else:
-                    return await r.followup.send(embed=Embeds.Music.self_track_added(r, song, True), ephemeral=True)
+                    return await r.followup.send(embed=Embeds.Music.self_track_added(r, song), ephemeral=True)
 
         except Exception as error:
-            Logger.log("MUSIC", "ERROR", f"Ошибка при добавлении трека (RU Modal): {error} | ID Сервера: {r.guild.id}")
+            Logger.log("MUSIC", "ERROR", f"Error on track add (Modal): {error} | Guild ID: {r.guild.id}")
             Logger.log_traceback()
             return await r.followup.send(embed=Embeds.Music.error(), ephemeral=True)
 
@@ -71,12 +71,12 @@ class SoundModal(Modal):
         self.bot = bot
         self.ctx = ctx
         self.vc = vc
-        super().__init__(title="Изменить уровень громкости")
+        super().__init__(title="Изменить уровень громкости" if Config.Bot.language() == "ru" else "Change player volume")
 
         self.add_item(
             InputText(
-                label="Уровень громкости",
-                placeholder="Число от 0 до 200.",
+                label="Уровень громкости" if Config.Bot.language() == "ru" else "Volume",
+                placeholder="Число от 0 до 200." if Config.Bot.language() == "ru" else "Integer from 0 to 200",
                 style=discord.InputTextStyle.short,
             )
         )
@@ -98,7 +98,7 @@ class SoundModal(Modal):
                 return await r.response.send_message(embed=Embeds.Music.invalid_volume(), ephemeral=True)
 
         except Exception as error:
-            Logger.log("MUSIC", "ERROR", f"Ошибка при изменении уровня громкости (RU Modal): {error} | ID Сервера: {r.guild.id}")
+            Logger.log("MUSIC", "ERROR", f"Error on volume change (Modal): {error} | Guild ID: {r.guild.id}")
             Logger.log_traceback()
             return await r.response.send_message(embed=Embeds.Music.error(), ephemeral=True)
 
@@ -113,7 +113,7 @@ class Player(discord.ui.View):
 
     @discord.ui.button(emoji="<:av_previous:1028326288424964208>", style=discord.ButtonStyle.gray, custom_id="av_previous", row=0)
     async def previous(self, button: discord.Button, r: discord.Interaction):
-        action_log(r, "Включил предыдущий трек")
+        action_log(r, "played previous song")
         try:
             if not r.guild.voice_client:
                 return await r.response.send_message(embed=Embeds.Music.voice_client_not_connected(), ephemeral=True)
@@ -142,24 +142,24 @@ class Player(discord.ui.View):
                 await vc.seek(position=postition)
 
                 if vc.notifications_level == 2:
-                    await self.msg.edit(embed=Embeds.Music.music_player_connected(previous_track, self.ctx, True), view=self)
+                    await self.msg.edit(embed=Embeds.Music.music_player_connected(previous_track, self.ctx), view=self)
                     await r.response.send_message(embed=Embeds.Music.returned(r, False))
                 elif vc.notifications_level == 1:
-                    await self.msg.edit(embed=Embeds.Music.music_player_connected(previous_track, self.ctx, True), view=self)
+                    await self.msg.edit(embed=Embeds.Music.music_player_connected(previous_track, self.ctx), view=self)
                     await r.response.send_message(embed=Embeds.Music.returned(r, True), ephemeral=True)
                 else:
-                    return await r.response.edit_message(embed=Embeds.Music.music_player_connected(previous_track, self.ctx, True), view=self)
+                    return await r.response.edit_message(embed=Embeds.Music.music_player_connected(previous_track, self.ctx), view=self)
             else:
                 return await r.response.send_message(embed=Embeds.Music.previous_track_is_none(), ephemeral=True)
 
         except Exception as error:
-            Logger.log("MUSIC", "ERROR", f"Ошибка при попытке включить предыдущий трек: {error} | ID Сервера: {r.guild.id}")
+            Logger.log("MUSIC", "ERROR", f"Error on previous track play (Modal): {error} | Guild ID: {r.guild.id}")
             Logger.log_traceback()
             return await r.response.send_message(embed=Embeds.Music.error(), ephemeral=True)
 
     @discord.ui.button(emoji="<:av_pause:1028328245227180142>", style=discord.ButtonStyle.gray, custom_id="av_pause", row=0)
     async def pause(self, button: discord.Button, r: discord.Interaction):
-        action_log(r, "Поставил трек на паузу")
+        action_log(r, "paused player playback")
         try:
             if not r.guild.voice_client:
                 return await r.response.send_message(embed=Embeds.Music.nothing_is_playing(), ephemeral=True)
@@ -196,13 +196,13 @@ class Player(discord.ui.View):
                     return await r.response.edit_message(view=self)
 
         except Exception as error:
-            Logger.log("MUSIC", "ERROR", f"Ошибка при попытке поставить трек на паузу: {error} | ID Сервера: {r.guild.id}")
+            Logger.log("MUSIC", "ERROR", f"Error on track pause (Modal): {error} | Guild ID: {r.guild.id}")
             Logger.log_traceback()
             return await r.response.send_message(embed=Embeds.Music.error(), ephemeral=True)
 
     @discord.ui.button(emoji="<:av_next:1028326301901279303>", style=discord.ButtonStyle.gray, custom_id="av_next", row=0)
     async def next_song(self, button: discord.Button, r: discord.Interaction):
-        action_log(r, "Включил следующий трек")
+        action_log(r, "played next track")
         try:
             if not r.guild.voice_client:
                 return await r.response.send_message(embed=Embeds.Music.voice_client_not_connected(), ephemeral=True)
@@ -229,22 +229,22 @@ class Player(discord.ui.View):
             song = vc.track
 
             if vc.notifications_level == 2:
-                await self.msg.edit(embed=Embeds.Music.music_player_connected(song, self.ctx, True), view=self)
+                await self.msg.edit(embed=Embeds.Music.music_player_connected(song, self.ctx), view=self)
                 await r.response.send_message(embed=Embeds.Music.skipped(r, False))
             elif vc.notifications_level == 1:
-                await self.msg.edit(embed=Embeds.Music.music_player_connected(song, self.ctx, True), view=self)
+                await self.msg.edit(embed=Embeds.Music.music_player_connected(song, self.ctx), view=self)
                 await r.response.send_message(embed=Embeds.Music.skipped(r, True), ephemeral=True)
             else:
-                return await r.response.edit_message(embed=Embeds.Music.music_player_connected(song, self.ctx, True), view=self)
+                return await r.response.edit_message(embed=Embeds.Music.music_player_connected(song, self.ctx), view=self)
         
         except Exception as error:
-            Logger.log("MUSIC", "ERROR", f"Ошибка при попытке пропустить трек: {error} | ID Сервера: {r.guild.id}")
+            Logger.log("MUSIC", "ERROR", f"Error on track skip (Modal): {error} | Guild ID: {r.guild.id}")
             Logger.log_traceback()
             return await r.response.send_message(embed=Embeds.Music.error(), ephemeral=True)
 
     @discord.ui.button(emoji="<:av_stop:1028328895218471014>", style=discord.ButtonStyle.gray, custom_id="av_stop", row=0)
     async def stop(self, button: discord.Button, r: discord.Interaction):
-        action_log(r, "Отключил плеер")
+        action_log(r, "stopped player")
         try:
             if not r.guild.voice_client:
                 return await r.response.send_message(embed=Embeds.Music.stop_not_connected(), ephemeral=True)
@@ -273,13 +273,13 @@ class Player(discord.ui.View):
             return await r.response.send_message(embed=Embeds.Music.stopped(r))
         
         except Exception as error:
-            Logger.log("MUSIC", "ERROR", f"Ошибка при попытке отключить плеер: {error} | ID Сервера: {r.guild.id}")
+            Logger.log("MUSIC", "ERROR", f"Error on player stop (Modal): {error} | Guild ID: {r.guild.id}")
             Logger.log_traceback()
             return await r.response.send_message(embed=Embeds.Music.error(), ephemeral=True)
 
     @discord.ui.button(emoji="<:av_add_song:1028326304778555513>", style=discord.ButtonStyle.gray, custom_id="av_add_song", row=0)
     async def add_song(self, button: discord.Button, r: discord.Interaction):
-        action_log(r, "Добавил трек в очередь")
+        action_log(r, "added track to the queue")
         try:
             if not r.guild.voice_client:
                 return await r.response.send_message(embed=Embeds.Music.voice_client_not_connected(), ephemeral=True)
@@ -291,13 +291,13 @@ class Player(discord.ui.View):
             await r.response.send_modal(SongModal(self.bot, self.ctx, vc, self.msg))
 
         except Exception as error:
-            Logger.log("MUSIC", "ERROR", f"Ошибка при попытке добавить трек: {error} | ID Сервера: {r.guild.id}")
+            Logger.log("MUSIC", "ERROR", f"Error on add track to the queue (Modal): {error} | Guild ID: {r.guild.id}")
             Logger.log_traceback()
             return await r.response.send_message(embed=Embeds.Music.error(), ephemeral=True)
 
     @discord.ui.button(emoji="<:av_replay:1028326290291433472>", style=discord.ButtonStyle.gray, custom_id="av_replay", row=1)
     async def replay(self, button: discord.Button, r: discord.Interaction):
-        action_log(r, "Включил трек заново")
+        action_log(r, "replayed track")
         try:
             if not r.guild.voice_client:
                 return await r.response.send_message(embed=Embeds.Music.nothing_is_playing(), ephemeral=True)
@@ -316,13 +316,13 @@ class Player(discord.ui.View):
             else:
                 return await r.response.edit_message(view=self)
         except Exception as error:
-            Logger.log("MUSIC", "ERROR", f"Ошибка при попытке проиграть трек заново: {error} | ID Сервера: {r.guild.id}")
+            Logger.log("MUSIC", "ERROR", f"Error on track replay (Modal): {error} | Guild ID: {r.guild.id}")
             Logger.log_traceback()
             return await r.response.send_message(embed=Embeds.Music.error(), ephemeral=True)
 
     @discord.ui.button(emoji="<:av_loop:1028326291843338300>", style=discord.ButtonStyle.gray, custom_id="av_loop", row=1)
     async def loop(self, button: discord.Button, r: discord.Interaction):
-        action_log(r, "Зациклил трек")
+        action_log(r, "looped track")
         try:
             if not r.guild.voice_client:
                 return await r.response.send_message(embed=Embeds.Music.nothing_is_playing(), ephemeral=True)
@@ -362,13 +362,13 @@ class Player(discord.ui.View):
                     return await r.response.edit_message(view=self)
 
         except Exception as error:
-            Logger.log("MUSIC", "ERROR", f"Ошибка при попытке зациклить трек: {error} | ID Сервера: {r.guild.id}")
+            Logger.log("MUSIC", "ERROR", f"Error on track loop (Modal): {error} | Guild ID: {r.guild.id}")
             Logger.log_traceback()
             return await r.response.send_message(embed=Embeds.Music.error(), ephemeral=True)
 
     @discord.ui.button(emoji="<:av_music_queue:1028326285690282075>", style=discord.ButtonStyle.gray, custom_id="av_queue", row=1)
     async def queue(self, button: discord.Button, r: discord.Interaction):
-        action_log(r, "Просмотрел очередь треков")
+        action_log(r, "view tracks queue")
         try:
             if not r.guild.voice_client:
                 return await r.response.send_message(embed=Embeds.Music.nothing_is_playing(), ephemeral=True)
@@ -383,13 +383,13 @@ class Player(discord.ui.View):
             return await r.response.send_message(embed=Embeds.Music.queue(queue), ephemeral=True)
 
         except Exception as error:
-            Logger.log("MUSIC", "ERROR", f"Ошибка при попытке отобразить очередь треков: {error} | ID Сервера: {r.guild.id}")
+            Logger.log("MUSIC", "ERROR", f"Error on track queue view (Modal): {error} | Guild ID: {r.guild.id}")
             Logger.log_traceback()
             return await r.response.send_message(embed=Embeds.Music.error(), ephemeral=True)
 
     @discord.ui.button(emoji="<:av_volume_settings:1028326298487115880>", style=discord.ButtonStyle.gray, custom_id="av_volume_settings", row=1)
     async def volume_settings(self, button: discord.Button, r: discord.Interaction):
-        action_log(r, "Изменил настройки громкости плеера")
+        action_log(r, "changed player volume")
         try:
             if not r.guild.voice_client:
                 return await r.response.send_message(embed=Embeds.Music.voice_client_not_connected(), ephemeral=True)
@@ -401,13 +401,13 @@ class Player(discord.ui.View):
             await r.response.send_modal(SoundModal(self.bot, self.ctx, vc))
 
         except Exception as error:
-            Logger.log("MUSIC", "ERROR", f"Ошибка при попытке изменить уровень громкости: {error} | ID Сервера: {r.guild.id}")
+            Logger.log("MUSIC", "ERROR", f"Error on player volume change (Modal): {error} | Guild ID: {r.guild.id}")
             Logger.log_traceback()
             return await r.response.send_message(embed=Embeds.Music.error(), ephemeral=True)
 
     @discord.ui.button(emoji="<:av_notifications_on:1028326287091179612>", style=discord.ButtonStyle.gray, custom_id="av_player_notifications", row=1)
     async def notifications(self, button: discord.Button, r: discord.Interaction):
-        action_log(r, "Изменил уровень уведомлений плеера")
+        action_log(r, "changed player notifications level")
         try:
             if not r.guild.voice_client:
                 return await r.response.send_message(embed=Embeds.Music.nothing_is_playing(), ephemeral=True)
@@ -439,7 +439,7 @@ class Player(discord.ui.View):
                 await r.response.send_message(embed=Embeds.Music.notifications(r, 1))
 
         except Exception as error:
-            Logger.log("MUSIC", "ERROR", f"Ошибка при попытке изменить уровень уведомлений: {error} | ID Сервера: {r.guild.id}")
+            Logger.log("MUSIC", "ERROR", f"Error on player notifications level change (Modal): {error} | Guild ID: {r.guild.id}")
             Logger.log_traceback()
             return await r.response.send_message(embed=Embeds.Music.error(), ephemeral=True)
 
