@@ -1,6 +1,6 @@
 ![Image](https://media.discordapp.net/attachments/1029785771839864852/1029785831180877864/banner.gif) 
 
-![](https://img.shields.io/badge/bot_version-v1.0.2-%23ebd8c3?style=for-the-badge&logo=python&logoColor=white)  ![](https://img.shields.io/badge/bot_language-russian_/_english-%23c5d9d7?style=for-the-badge)
+![](https://img.shields.io/badge/bot_version-v1.0.3-%23ebd8c3?style=for-the-badge&logo=python&logoColor=white)  ![](https://img.shields.io/badge/bot_language-russian_/_english-%23c5d9d7?style=for-the-badge)
 ****
 
 This is a repo with source for Sanya-nya discord bot. It plays music from YouTube and works both on slash and prefixed commands.
@@ -31,7 +31,7 @@ This bot is completely ready to be hosted on Railway:
 3. Create an application on [Discord Developer Portal](https://discord.com/developers/applications).
 4. Invite your newly created bot to your server with url which you can generate on application settings page.
 5. Go to [railway.app](https://railway.app), connect your GitHub account and deploy your cloned repo.
-6. Set your bot token ad an enviromental variable named `BOT_TOKEN` on Railway.
+6. Set your bot token as an enviromental variable named `BOT_TOKEN` on Railway.
 7. You are done!
 
 **Important:** If you are going to host this bot by yourself, I highly recommend to use **your** lavalink server hosted by **you** or on a **hosting**. I'm too lazy to look for ways of doing it but you should definitely come up with something.
