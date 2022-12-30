@@ -653,7 +653,7 @@ class Music(commands.Cog):
         description_localizations={
             "ru": "Название или ссылка (YouTube) на трек, который вы хотите включить."
         },
-        min_length=4,
+        min_length=2,
         max_length=50,
         required=True
     )
