@@ -99,10 +99,10 @@ class Icons():
 # application.yml - https://github.com/freyacodes/Lavalink#server-configuration
 class Lavalink():
     def host():
-        return "lavalink.oops.wtf"
+        return "node1.kartadharta.xyz"
     
     def port():
         return 443
     
     def password():
-        return "www.freelavalink.ga"
+        return "kdlavalink"
