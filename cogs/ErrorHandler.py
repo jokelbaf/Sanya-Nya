@@ -17,7 +17,7 @@ class ErrorHandler(commands.Cog):
                 embed=Embeds.ErrorHandler.dm_not_supported(Functions.get_locale(self.bot, ctx)), mention_author=False
             )
         
-        Logger.log("ERROR", "COMMAND", f"Критическая ошибка при использовании команды {ctx.command.qualified_name}.")
+        Logger.log("ERROR", "COMMAND", f"Fatal error while executing command {ctx.command.qualified_name}.")
         return Logger.log_traceback()
 
     @commands.Cog.listener()
@@ -25,7 +25,7 @@ class ErrorHandler(commands.Cog):
         if isinstance(error, commands.NoPrivateMessage):
             return await ctx.respond(embed=Embeds.ErrorHandler.dm_not_supported(Functions.get_locale(self.bot, ctx)), ephemeral=True)
 
-        Logger.log("ERROR", "S-COMMAND", f"Критическая ошибка при использовании слэш-команды {ctx.command.qualified_name}.")
+        Logger.log("ERROR", "S-COMMAND", f"Fatal error while executing slash command {ctx.command.qualified_name}.")
         return Logger.log_traceback()
 
 def setup(bot):

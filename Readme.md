@@ -5,7 +5,7 @@
 
 This is a repo with source for Sanya-nya discord bot. It plays music from YouTube and works both on slash and prefixed commands.
 
-You can invite the official version of the bot [here](https://discord.com/api/oauth2/authorize?client_id=1028248893600841748&permissions=2184563712&scope=bot%20applications.commands).
+You can invite the official version of Sanya-nya [here](https://discord.com/api/oauth2/authorize?client_id=1028248893600841748&permissions=2184563712&scope=bot%20applications.commands).
 
 # Commands
 List of all bot's commands and their description.
