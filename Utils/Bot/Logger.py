@@ -25,7 +25,7 @@ def update_logs_lvl(now):
 
 def create_logs_file(now):
     with open(file=f"./logs/{now.strftime('%m-%d-%Y-%H-%M-%S')}.txt", mode="w", encoding="utf-8") as logs:
-        logs.write(f"[{now.strftime(f'%m/%d/%Y, %H:%M:%S')}] [ARI/LOGS]: Logs file created.")
+        logs.write(f"[{now.strftime(f'%m/%d/%Y, %H:%M:%S')}] [SANYA/LOGS]: Logs file created.")
     with open("./logs/settings.json", "r", encoding="utf-8") as settings:
         data = json.load(settings)
     with open("./logs/settings.json", "w", encoding="utf-8") as settings:

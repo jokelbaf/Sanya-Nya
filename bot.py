@@ -15,6 +15,7 @@ bot.remove_command("help")
 setattr(bot, "start_time", datetime.now())
 if Config.Bot.language() == "auto":
     setattr(bot, "users_cache", TTLCache(maxsize=Config.Bot.max_cached_users(), ttl=Config.Bot.cache_time()))
+    
 Logger.on_ready()
 
 for filename in os.listdir('./cogs'):

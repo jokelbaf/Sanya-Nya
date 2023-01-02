@@ -236,13 +236,13 @@ class Music():
             embed = discord.Embed(
                 color=0xdd5f65,
                 title="Трек не найден",
-                description="Ари не удалось найти трек по вашему запросу."
+                description="Не удалось найти трек по вашему запросу."
             )
         else:
             embed = discord.Embed(
                 color=0xdd5f65,
                 title="Track Not Found",
-                description="Ari can not find track with your query."
+                description="Can't find track with your query."
             )
         return embed
     

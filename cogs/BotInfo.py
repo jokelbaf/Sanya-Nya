@@ -1,7 +1,7 @@
 from datetime import datetime
 from discord.ext import commands
+import asyncio, discord, psutil, platform
 from discord.commands import slash_command
-import asyncio, discord, psutil, platform, Config
 
 from Utils.Bot import Functions
 from Data.Localizations import Embeds, Messages
