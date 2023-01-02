@@ -2,7 +2,7 @@
 images, Bot configuration like «Developer Mode» and 
 some permament data like links and credentials."""
 
-import discord
+import discord, os
 
 class Bot():
     # Bot language. Can be set to russian (ru), english (en), or auto
@@ -99,10 +99,10 @@ class Icons():
 # application.yml - https://github.com/freyacodes/Lavalink#server-configuration
 class Lavalink():
     def host():
-        return "node1.kartadharta.xyz"
+        return os.environ.get("LAVALINK_HOST")
     
     def port():
-        return 443
+        return os.environ.get("LAVALINK_PORT")
     
     def password():
-        return "kdlavalink"
+        return os.environ.get("LAVALINK_PWD")

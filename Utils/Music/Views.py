@@ -18,7 +18,9 @@ class SongModal(Modal):
         self.ctx = ctx
         self.vc = vc
         self.msg = msg
-        super().__init__(title="Добавить песню в очередь" if language == "ru" else "Add track to the queue")
+        super().__init__(
+            title="Добавить песню в очередь" if language == "ru" else "Add track to the queue"
+        )
 
         self.add_item(
             InputText(
@@ -87,7 +89,9 @@ class SoundModal(Modal):
         self.bot = bot
         self.ctx = ctx
         self.vc = vc
-        super().__init__(title="Изменить уровень громкости" if language == "ru" else "Change player volume")
+        super().__init__(
+            title="Изменить уровень громкости" if language == "ru" else "Change player volume"
+        )
 
         self.add_item(
             InputText(

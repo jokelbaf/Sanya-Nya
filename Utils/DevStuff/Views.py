@@ -1,8 +1,8 @@
 """All views for DevStuff Module"""
 
 from aioconsole import aexec
-import discord, sys, time, io
 from discord.ext import commands
+import discord, sys, time, io, Config
 
 
 class EvalView(discord.ui.View):
@@ -29,7 +29,7 @@ class EvalView(discord.ui.View):
         await r.response.defer(invisible=True)
 
         code = (await self.ctx.fetch_message(self.code_msg.id)).content
-        code = code.replace("```python", "").replace("```", "").replace("a!eval ", "").replace("a!eval", "")
+        code = code.replace("```python", "").replace("```", "").replace(f"{Config.Bot.prefix()}eval ", "").replace(f"{Config.Bot.prefix()}eval", "")
 
         stdout = sys.stdout
 
@@ -92,4 +92,3 @@ class EvalView(discord.ui.View):
         except:
             pass
         return await super().on_timeout()
-        

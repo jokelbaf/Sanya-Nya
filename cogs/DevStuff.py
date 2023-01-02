@@ -2,7 +2,7 @@
 
 from aioconsole import aexec
 from discord.ext import commands
-import discord, os, time, sys, io
+import discord, os, time, sys, io, Config
 
 from Utils.DevStuff import Views
 
@@ -68,7 +68,7 @@ class BotGuild(commands.Cog):
             else:
                 try:
                     code_msg = await ctx.channel.fetch_message(ctx.message.reference.message_id)
-                    code = code_msg.content.replace("a!eval ", "").replace("a!eval", "")
+                    code = code_msg.content.replace(f"{Config.Bot.prefix()}eval ", "").replace(f"{Config.Bot.prefix()}eval", "")
 
                 except Exception as e:
                     return await ctx.reply(
