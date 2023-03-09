@@ -5,11 +5,11 @@ from discord.ext import commands
 from discord.ui import InputText, Modal
 
 from Data.Localizations import Embeds
-from Utils.Bot import Logger, Functions
+from Utils.Bot import Functions, Logger
 
 
-def action_log(r: discord.Interaction, action: str):
-    Logger.log("MUSIC", "INTERACTION", f'User {r.user.name} ({r.user.id}) {action}. Guild ID - {r.guild.id}')
+def action_log(r: discord.Interaction, action: str) -> None:
+    return Logger.log("MUSIC", "INTERACTION", f'User {r.user.name} ({r.user.id}) {action}. Guild ID - {r.guild.id}')
 
 
 class SongModal(Modal):
@@ -30,6 +30,7 @@ class SongModal(Modal):
             )
         )
     async def callback(self, r: discord.Interaction):
+        user = await Functions.get_user(self.bot, r)
         try:
             vc: wavelink.Player = r.guild.voice_client
             if vc.notifications_level == 2:
@@ -39,19 +40,19 @@ class SongModal(Modal):
                 
             if vc.queue.count > 24:
                 return await r.followup.send(
-                    embed=Embeds.Music.premium_queue_is_full(Functions.get_locale(self.bot, r))
+                    embed=Embeds.Music.premium_queue_is_full(user.language)
                 )
 
             try:
                 song = await wavelink.YouTubeTrack.search(query=self.children[0].value, return_first=True)
             except:
                 return await r.followup.send(
-                    embed=Embeds.Music.song_not_found(Functions.get_locale(self.bot, r))
+                    embed=Embeds.Music.song_not_found(user.language)
                 )
 
             if int(song.duration) > 3600:
                 return await r.followup.send(
-                    embed=Embeds.Music.song_is_too_long(Functions.get_locale(self.bot, r))
+                    embed=Embeds.Music.song_is_too_long(user.language)
                 )
 
             if vc.queue.is_empty and not vc.is_playing():
@@ -59,28 +60,28 @@ class SongModal(Modal):
                 await self.msg.edit(embed=Embeds.Music.music_player_connected(vc.language, song, self.ctx))
                 if vc.notifications_level == 2:
                     return await r.followup.send(
-                        embed=Embeds.Music.track_added_to_play(Functions.get_locale(self.bot, r), r, song)
+                        embed=Embeds.Music.track_added_to_play(user.language, r, song)
                         )
                 else:
                     return await r.followup.send(
-                        embed=Embeds.Music.self_track_added_to_play(Functions.get_locale(self.bot, r), r, song), ephemeral=True
+                        embed=Embeds.Music.self_track_added_to_play(user.language, r, song), ephemeral=True
                         )
             else:
                 await vc.queue.put_wait(song)
                 if vc.notifications_level == 2:
                     return await r.followup.send(
-                        embed=Embeds.Music.track_added(Functions.get_locale(self.bot, r), r, song)
+                        embed=Embeds.Music.track_added(user.language, r, song)
                         )
                 else:
                     return await r.followup.send(
-                        embed=Embeds.Music.self_track_added(Functions.get_locale(self.bot, r), r, song), ephemeral=True
+                        embed=Embeds.Music.self_track_added(user.language, r, song), ephemeral=True
                     )
 
         except Exception as error:
             Logger.log("MUSIC", "ERROR", f"Error on track add (Modal): {error} | Guild ID: {r.guild.id}")
             Logger.log_traceback()
             return await r.followup.send(
-                embed=Embeds.Music.error(Functions.get_locale(self.bot, r)), ephemeral=True
+                embed=Embeds.Music.error(user.language), ephemeral=True
                 )
 
 
@@ -101,35 +102,36 @@ class SoundModal(Modal):
             )
         )
     async def callback(self, r: discord.Interaction):
+        user = await Functions.get_user(self.bot, r)
         try:
             vc: wavelink.Player = r.guild.voice_client
             volume = self.children[0].value
 
             if volume.isdigit() is False:
                 return await r.response.send_message(
-                    embed=Embeds.Music.invalid_volume(Functions.get_locale(self.bot, r)), ephemeral=True
+                    embed=Embeds.Music.invalid_volume(user.language), ephemeral=True
                 )
 
             if 0 <= int(volume) <= 200:
                 await vc.set_volume(int(volume))
                 if vc.notifications_level == 2:
                     return await r.response.send_message(
-                        embed=Embeds.Music.volume_set(Functions.get_locale(self.bot, r), r, volume)
+                        embed=Embeds.Music.volume_set(user.language, r, volume)
                     )
                 else:
                     return await r.response.send_message(
-                        embed=Embeds.Music.self_volume_set(Functions.get_locale(self.bot, r), volume), ephemeral=True
+                        embed=Embeds.Music.self_volume_set(user.language, volume), ephemeral=True
                     )
             else:
                 return await r.response.send_message(
-                    embed=Embeds.Music.invalid_volume(Functions.get_locale(self.bot, r)), ephemeral=True
+                    embed=Embeds.Music.invalid_volume(user.language), ephemeral=True
                 )
 
         except Exception as error:
             Logger.log("MUSIC", "ERROR", f"Error on volume change (Modal): {error} | Guild ID: {r.guild.id}")
             Logger.log_traceback()
             return await r.response.send_message(
-                embed=Embeds.Music.error(Functions.get_locale(self.bot, r)), ephemeral=True
+                embed=Embeds.Music.error(user.language), ephemeral=True
             )
 
 
@@ -143,15 +145,18 @@ class Player(discord.ui.View):
 
     @discord.ui.button(emoji="<:av_previous:1028326288424964208>", style=discord.ButtonStyle.gray, custom_id="av_previous", row=0)
     async def previous(self, button: discord.Button, r: discord.Interaction):
+
+        user = await Functions.get_user(self.bot, r)
         action_log(r, "played previous song")
+
         try:
             if not r.guild.voice_client:
                 return await r.response.send_message(
-                    embed=Embeds.Music.voice_client_not_connected(Functions.get_locale(self.bot, r)), ephemeral=True
+                    embed=Embeds.Music.voice_client_not_connected(user.language), ephemeral=True
                 )
             elif not getattr(r.user.voice, "channel", None):
                 return await r.response.send_message(
-                    embed=Embeds.Music.join_vc(Functions.get_locale(self.bot, r)), ephemeral=True
+                    embed=Embeds.Music.join_vc(user.language), ephemeral=True
                 )
             else:
                 vc: wavelink.Player = r.guild.voice_client
@@ -180,14 +185,14 @@ class Player(discord.ui.View):
                         embed=Embeds.Music.music_player_connected(vc.language, previous_track, self.ctx), view=self
                     )
                     await r.response.send_message(
-                        embed=Embeds.Music.returned(Functions.get_locale(self.bot, r), r, False)
+                        embed=Embeds.Music.returned(user.language, r, False)
                     )
                 elif vc.notifications_level == 1:
                     await self.msg.edit(
                         embed=Embeds.Music.music_player_connected(vc.language, previous_track, self.ctx), view=self
                     )
                     await r.response.send_message(
-                        embed=Embeds.Music.returned(Functions.get_locale(self.bot, r), r, True), ephemeral=True
+                        embed=Embeds.Music.returned(user.language, r, True), ephemeral=True
                     )
                 else:
                     return await r.response.edit_message(
@@ -195,33 +200,36 @@ class Player(discord.ui.View):
                     )
             else:
                 return await r.response.send_message(
-                    embed=Embeds.Music.previous_track_is_none(Functions.get_locale(self.bot, r)), ephemeral=True
+                    embed=Embeds.Music.previous_track_is_none(user.language), ephemeral=True
                 )
 
         except Exception as error:
             Logger.log("MUSIC", "ERROR", f"Error on previous track play (Modal): {error} | Guild ID: {r.guild.id}")
             Logger.log_traceback()
             return await r.response.send_message(
-                embed=Embeds.Music.error(Functions.get_locale(self.bot, r)), ephemeral=True
+                embed=Embeds.Music.error(user.language), ephemeral=True
             )
 
     @discord.ui.button(emoji="<:av_pause:1028328245227180142>", style=discord.ButtonStyle.gray, custom_id="av_pause", row=0)
     async def pause(self, button: discord.Button, r: discord.Interaction):
+
+        user = await Functions.get_user(self.bot, r)
         action_log(r, "paused player playback")
+
         try:
             if not r.guild.voice_client:
                 return await r.response.send_message(
-                    embed=Embeds.Music.nothing_is_playing(Functions.get_locale(self.bot, r)), ephemeral=True
+                    embed=Embeds.Music.nothing_is_playing(user.language), ephemeral=True
                 )
             elif not getattr(r.user.voice, "channel", None):
                 return await r.response.send_message(
-                    embed=Embeds.Music.join_vc(Functions.get_locale(self.bot, r)), ephemeral=True
+                    embed=Embeds.Music.join_vc(user.language), ephemeral=True
                 )
             else:
                 vc: wavelink.Player = self.ctx.voice_client
 
             if vc.is_playing() is False: return await r.response.send_message(
-                embed=Embeds.Music.nothing_is_playing(Functions.get_locale(self.bot, r)), ephemeral=True
+                embed=Embeds.Music.nothing_is_playing(user.language), ephemeral=True
             )
 
             if vc.is_paused() == False:
@@ -231,12 +239,12 @@ class Player(discord.ui.View):
                 if vc.notifications_level == 2:
                     await self.msg.edit(view=self)
                     return await r.response.send_message(
-                        embed=Embeds.Music.paused(Functions.get_locale(self.bot, r), r, False), delete_after=10
+                        embed=Embeds.Music.paused(user.language, r, False), delete_after=10
                     )
                 elif vc.notifications_level == 1:
                     await self.msg.edit(view=self)
                     return await r.response.send_message(
-                        embed=Embeds.Music.paused(Functions.get_locale(self.bot, r), r, True), ephemeral=True
+                        embed=Embeds.Music.paused(user.language, r, True), ephemeral=True
                     )
                 else:
                     return await r.response.edit_message(view=self)
@@ -247,12 +255,12 @@ class Player(discord.ui.View):
                 if vc.notifications_level == 2:
                     await self.msg.edit(view=self)
                     return await r.response.send_message(
-                        embed=Embeds.Music.resumed(Functions.get_locale(self.bot, r), r, False), delete_after=10
+                        embed=Embeds.Music.resumed(user.language, r, False), delete_after=10
                     )
                 elif vc.notifications_level == 1:
                     await self.msg.edit(view=self)
                     return await r.response.send_message(
-                        embed=Embeds.Music.resumed(Functions.get_locale(self.bot, r), r, True), ephemeral=True
+                        embed=Embeds.Music.resumed(user.language, r, True), ephemeral=True
                     )
                 else:
                     return await r.response.edit_message(view=self)
@@ -261,27 +269,30 @@ class Player(discord.ui.View):
             Logger.log("MUSIC", "ERROR", f"Error on track pause (Modal): {error} | Guild ID: {r.guild.id}")
             Logger.log_traceback()
             return await r.response.send_message(
-                embed=Embeds.Music.error(Functions.get_locale(self.bot, r)), ephemeral=True
+                embed=Embeds.Music.error(user.language), ephemeral=True
             )
 
     @discord.ui.button(emoji="<:av_next:1028326301901279303>", style=discord.ButtonStyle.gray, custom_id="av_next", row=0)
     async def next_song(self, button: discord.Button, r: discord.Interaction):
+
+        user = await Functions.get_user(self.bot, r)
         action_log(r, "played next track")
+
         try:
             if not r.guild.voice_client:
                 return await r.response.send_message(
-                    embed=Embeds.Music.voice_client_not_connected(Functions.get_locale(self.bot, r)), ephemeral=True
+                    embed=Embeds.Music.voice_client_not_connected(user.language), ephemeral=True
                 )
             elif not getattr(r.user.voice, "channel", None):
                 return await r.response.send_message(
-                    embed=Embeds.Music.join_vc(Functions.get_locale(self.bot, r)), ephemeral=True
+                    embed=Embeds.Music.join_vc(user.language), ephemeral=True
                 )
             else:
                 vc: wavelink.Player = r.guild.voice_client
             
             if vc.queue.is_empty:
                 return await r.response.send_message(
-                    embed=Embeds.Music.queue_is_empty(Functions.get_locale(self.bot, r)), ephemeral=True
+                    embed=Embeds.Music.queue_is_empty(user.language), ephemeral=True
                 )
             
             if vc.loop:
@@ -303,14 +314,14 @@ class Player(discord.ui.View):
                     embed=Embeds.Music.music_player_connected(vc.language, song, self.ctx), view=self
                 )
                 await r.response.send_message(
-                    embed=Embeds.Music.skipped(Functions.get_locale(self.bot, r), r, False)
+                    embed=Embeds.Music.skipped(user.language, r, False)
                 )
             elif vc.notifications_level == 1:
                 await self.msg.edit(
                     embed=Embeds.Music.music_player_connected(vc.language, song, self.ctx), view=self
                 )
                 await r.response.send_message(
-                    embed=Embeds.Music.skipped(Functions.get_locale(self.bot, r), r, True), ephemeral=True
+                    embed=Embeds.Music.skipped(user.language, r, True), ephemeral=True
                 )
             else:
                 return await r.response.edit_message(
@@ -321,20 +332,23 @@ class Player(discord.ui.View):
             Logger.log("MUSIC", "ERROR", f"Error on track skip (Modal): {error} | Guild ID: {r.guild.id}")
             Logger.log_traceback()
             return await r.response.send_message(
-                embed=Embeds.Music.error(Functions.get_locale(self.bot, r)), ephemeral=True
+                embed=Embeds.Music.error(user.language), ephemeral=True
             )
 
     @discord.ui.button(emoji="<:av_stop:1028328895218471014>", style=discord.ButtonStyle.gray, custom_id="av_stop", row=0)
     async def stop(self, button: discord.Button, r: discord.Interaction):
+
+        user = await Functions.get_user(self.bot, r)
         action_log(r, "stopped player")
+
         try:
             if not r.guild.voice_client:
                 return await r.response.send_message(
-                    embed=Embeds.Music.stop_not_connected(Functions.get_locale(self.bot, r)), ephemeral=True
+                    embed=Embeds.Music.stop_not_connected(user.language), ephemeral=True
                 )
             elif not getattr(r.user.voice, "channel", None):
                 return await r.response.send_message(
-                    embed=Embeds.Music.join_vc(Functions.get_locale(self.bot, r)), ephemeral=True
+                    embed=Embeds.Music.join_vc(user.language), ephemeral=True
                 )
             else:
                 vc: wavelink.Player = r.guild.voice_client
@@ -357,65 +371,71 @@ class Player(discord.ui.View):
 
             await self.msg.edit(embed=embed, view=self)
             return await r.response.send_message(
-                embed=Embeds.Music.stopped(Functions.get_locale(self.bot, r), r)
+                embed=Embeds.Music.stopped(user.language, r)
             )
         
         except Exception as error:
             Logger.log("MUSIC", "ERROR", f"Error on player stop (Modal): {error} | Guild ID: {r.guild.id}")
             Logger.log_traceback()
             return await r.response.send_message(
-                embed=Embeds.Music.error(Functions.get_locale(self.bot, r)), ephemeral=True
+                embed=Embeds.Music.error(user.language), ephemeral=True
             )
 
     @discord.ui.button(emoji="<:av_add_song:1028326304778555513>", style=discord.ButtonStyle.gray, custom_id="av_add_song", row=0)
     async def add_song(self, button: discord.Button, r: discord.Interaction):
+
+        user = await Functions.get_user(self.bot, r)
         action_log(r, "added track to the queue")
+        
         try:
             if not r.guild.voice_client:
                 return await r.response.send_message(
-                    embed=Embeds.Music.voice_client_not_connected(Functions.get_locale(self.bot, r)), ephemeral=True
+                    embed=Embeds.Music.voice_client_not_connected(user.language), ephemeral=True
                 )
             elif not getattr(r.user.voice, "channel", None):
                 return await r.response.send_message(
-                    embed=Embeds.Music.join_vc(Functions.get_locale(self.bot, r)), ephemeral=True
+                    embed=Embeds.Music.join_vc(user.language), ephemeral=True
                 )
             else:
                 vc: wavelink.Player = r.guild.voice_client
 
-            await r.response.send_modal(SongModal(self.bot, self.ctx, vc, self.msg, Functions.get_locale(self.bot, r)))
+            await r.response.send_modal(SongModal(self.bot, self.ctx, vc, self.msg, user.language))
 
         except Exception as error:
             Logger.log("MUSIC", "ERROR", f"Error on add track to the queue (Modal): {error} | Guild ID: {r.guild.id}")
             Logger.log_traceback()
             return await r.response.send_message(
-                embed=Embeds.Music.error(Functions.get_locale(self.bot, r)), ephemeral=True
+                embed=Embeds.Music.error(user.language), ephemeral=True
             )
 
     @discord.ui.button(emoji="<:av_replay:1028326290291433472>", style=discord.ButtonStyle.gray, custom_id="av_replay", row=1)
     async def replay(self, button: discord.Button, r: discord.Interaction):
+
+        user = await Functions.get_user(self.bot, r)
         action_log(r, "replayed track")
+
         try:
             if not r.guild.voice_client:
                 return await r.response.send_message(
-                    embed=Embeds.Music.nothing_is_playing(Functions.get_locale(self.bot, r)), ephemeral=True
+                    embed=Embeds.Music.nothing_is_playing(user.language), ephemeral=True
                 )
             elif not getattr(r.user.voice, "channel", None):
                 return await r.response.send_message(
-                    embed=Embeds.Music.join_vc(Functions.get_locale(self.bot, r)), ephemeral=True
+                    embed=Embeds.Music.join_vc(user.language), ephemeral=True
                 )
             else:
                 vc: wavelink.Player = r.guild.voice_client
 
-            if vc.is_playing() is False: return await r.response.send_message(embed=Embeds.Music.loop_nothing_playing(Functions.get_locale(self.bot, r)), ephemeral=True)
+            if vc.is_playing() is False: return await r.response.send_message(embed=Embeds.Music.loop_nothing_playing(user.language), ephemeral=True)
             
             await vc.seek(0)
             if vc.notifications_level == 2:
                 return await r.response.send_message(
-                    embed=Embeds.Music.replay(Functions.get_locale(self.bot, r), r, False), delete_after=10
+                    embed=Embeds.Music.replay(user.language, r, False), delete_after=10
                 )
             elif vc.notifications_level == 1:
                 return await r.response.send_message(
-                    embed=Embeds.Music.replay(Functions.get_locale(self.bot, r), r, True), ephemeral=True
+                    embed=Embeds.Music.replay(user.language, r, True), ephemeral=True
                 )
             else:
                 return await r.response.edit_message(view=self)
@@ -423,26 +443,29 @@ class Player(discord.ui.View):
             Logger.log("MUSIC", "ERROR", f"Error on track replay (Modal): {error} | Guild ID: {r.guild.id}")
             Logger.log_traceback()
             return await r.response.send_message(
-                embed=Embeds.Music.error(Functions.get_locale(self.bot, r)), ephemeral=True
+                embed=Embeds.Music.error(user.language), ephemeral=True
             )
 
     @discord.ui.button(emoji="<:av_loop:1028326291843338300>", style=discord.ButtonStyle.gray, custom_id="av_loop", row=1)
     async def loop(self, button: discord.Button, r: discord.Interaction):
+
+        user = await Functions.get_user(self.bot, r)
         action_log(r, "looped track")
+        
         try:
             if not r.guild.voice_client:
                 return await r.response.send_message(
-                    embed=Embeds.Music.nothing_is_playing(Functions.get_locale(self.bot, r)), ephemeral=True
+                    embed=Embeds.Music.nothing_is_playing(user.language), ephemeral=True
                 )
             elif not getattr(r.user.voice, "channel", None):
                 return await r.response.send_message(
-                    embed=Embeds.Music.join_vc(Functions.get_locale(self.bot, r)), ephemeral=True
+                    embed=Embeds.Music.join_vc(user.language), ephemeral=True
                 )
             else:
                 vc: wavelink.Player = r.guild.voice_client
 
             if vc.is_playing() is False: return await r.response.send_message(
-                embed=Embeds.Music.loop_nothing_playing(Functions.get_locale(self.bot, r)), ephemeral=True
+                embed=Embeds.Music.loop_nothing_playing(user.language), ephemeral=True
             )
 
             if not hasattr(vc, "loop"):
@@ -455,12 +478,12 @@ class Player(discord.ui.View):
                 if vc.notifications_level == 2:
                     await self.msg.edit(view=self)
                     return await r.response.send_message(
-                        embed=Embeds.Music.loop_enabled(Functions.get_locale(self.bot, r), r, False), delete_after=10
+                        embed=Embeds.Music.loop_enabled(user.language, r, False), delete_after=10
                     )
                 elif vc.notifications_level == 1:
                     await self.msg.edit(view=self)
                     return await r.response.send_message(
-                        embed=Embeds.Music.loop_enabled(Functions.get_locale(self.bot, r), r, True), ephemeral=True
+                        embed=Embeds.Music.loop_enabled(user.language, r, True), ephemeral=True
                     )
                 else:
                     return await r.response.edit_message(view=self)
@@ -471,12 +494,12 @@ class Player(discord.ui.View):
                 if vc.notifications_level == 2:
                     await self.msg.edit(view=self)
                     await r.response.send_message(
-                        embed=Embeds.Music.loop_disabled(Functions.get_locale(self.bot, r), r, False), delete_after=10
+                        embed=Embeds.Music.loop_disabled(user.language, r, False), delete_after=10
                     )
                 elif vc.notifications_level == 1:
                     await self.msg.edit(view=self)
                     await r.response.send_message(
-                        embed=Embeds.Music.loop_disabled(Functions.get_locale(self.bot, r), r, True), ephemeral=True
+                        embed=Embeds.Music.loop_disabled(user.language, r, True), ephemeral=True
                     )
                 else:
                     return await r.response.edit_message(view=self)
@@ -485,75 +508,84 @@ class Player(discord.ui.View):
             Logger.log("MUSIC", "ERROR", f"Error on track loop (Modal): {error} | Guild ID: {r.guild.id}")
             Logger.log_traceback()
             return await r.response.send_message(
-                embed=Embeds.Music.error(Functions.get_locale(self.bot, r)), ephemeral=True
+                embed=Embeds.Music.error(user.language), ephemeral=True
             )
 
     @discord.ui.button(emoji="<:av_music_queue:1028326285690282075>", style=discord.ButtonStyle.gray, custom_id="av_queue", row=1)
     async def queue(self, button: discord.Button, r: discord.Interaction):
+
+        user = await Functions.get_user(self.bot, r)
         action_log(r, "view tracks queue")
+
         try:
             if not r.guild.voice_client:
                 return await r.response.send_message(
-                    embed=Embeds.Music.nothing_is_playing(Functions.get_locale(self.bot, r)), ephemeral=True
+                    embed=Embeds.Music.nothing_is_playing(user.language), ephemeral=True
                 )
             elif not getattr(r.user.voice, "channel", None):
                 return await r.response.send_message(
-                    embed=Embeds.Music.join_vc(Functions.get_locale(self.bot, r)), ephemeral=True
+                    embed=Embeds.Music.join_vc(user.language), ephemeral=True
                 )
             else:
                 vc: wavelink.Player = r.guild.voice_client
 
             if vc.queue.is_empty: return await r.response.send_message(
-                embed=Embeds.Music.queue_is_empty_(Functions.get_locale(self.bot, r)), ephemeral=True
+                embed=Embeds.Music.queue_is_empty_(user.language), ephemeral=True
             )
 
             queue = vc.queue.copy()
             return await r.response.send_message(
-                embed=Embeds.Music.queue(Functions.get_locale(self.bot, r), queue), ephemeral=True
+                embed=Embeds.Music.queue(user.language, queue), ephemeral=True
             )
 
         except Exception as error:
             Logger.log("MUSIC", "ERROR", f"Error on track queue view (Modal): {error} | Guild ID: {r.guild.id}")
             Logger.log_traceback()
             return await r.response.send_message(
-                embed=Embeds.Music.error(Functions.get_locale(self.bot, r)), ephemeral=True
+                embed=Embeds.Music.error(user.language), ephemeral=True
             )
 
     @discord.ui.button(emoji="<:av_volume_settings:1028326298487115880>", style=discord.ButtonStyle.gray, custom_id="av_volume_settings", row=1)
     async def volume_settings(self, button: discord.Button, r: discord.Interaction):
+
+        user = await Functions.get_user(self.bot, r)
         action_log(r, "changed player volume")
+        
         try:
             if not r.guild.voice_client:
                 return await r.response.send_message(
-                    embed=Embeds.Music.voice_client_not_connected(Functions.get_locale(self.bot, r)), ephemeral=True
+                    embed=Embeds.Music.voice_client_not_connected(user.language), ephemeral=True
                 )
             elif not getattr(r.user.voice, "channel", None):
                 return await r.response.send_message(
-                    embed=Embeds.Music.join_vc(Functions.get_locale(self.bot, r)), ephemeral=True
+                    embed=Embeds.Music.join_vc(user.language), ephemeral=True
                 )
             else:
                 vc: wavelink.Player = r.guild.voice_client
             
-            await r.response.send_modal(SoundModal(self.bot, self.ctx, vc, Functions.get_locale(self.bot, r)))
+            await r.response.send_modal(SoundModal(self.bot, self.ctx, vc, user.language))
 
         except Exception as error:
             Logger.log("MUSIC", "ERROR", f"Error on player volume change (Modal): {error} | Guild ID: {r.guild.id}")
             Logger.log_traceback()
             return await r.response.send_message(
-                embed=Embeds.Music.error(Functions.get_locale(self.bot, r)), ephemeral=True
+                embed=Embeds.Music.error(user.language), ephemeral=True
             )
 
     @discord.ui.button(emoji="<:av_notifications_on:1028326287091179612>", style=discord.ButtonStyle.gray, custom_id="av_player_notifications", row=1)
     async def notifications(self, button: discord.Button, r: discord.Interaction):
+        
         action_log(r, "changed player notifications level")
+        user = await Functions.get_user(self.bot, r)
+        
         try:
             if not r.guild.voice_client:
                 return await r.response.send_message(
-                    embed=Embeds.Music.nothing_is_playing(Functions.get_locale(self.bot, r)), ephemeral=True
+                    embed=Embeds.Music.nothing_is_playing(user.language), ephemeral=True
                 )
             elif not getattr(r.user.voice, "channel", None):
                 return await r.response.send_message(
-                    embed=Embeds.Music.join_vc(Functions.get_locale(self.bot, r)), ephemeral=True
+                    embed=Embeds.Music.join_vc(user.language), ephemeral=True
                 )
             else:
                 vc: wavelink.Player = r.guild.voice_client
@@ -567,7 +599,7 @@ class Player(discord.ui.View):
                 button.emoji = "<:ari_notifications_off:964415669582069770>"
                 await self.msg.edit(view=self)
                 await r.response.send_message(
-                    embed=Embeds.Music.notifications(Functions.get_locale(self.bot, r), r, 0)
+                    embed=Embeds.Music.notifications(user.language, r, 0)
                 )
             elif vc.notifications_level == 1:
                 vc.notifications_level = 2
@@ -575,7 +607,7 @@ class Player(discord.ui.View):
                 button.emoji = "<:av_notifications_on:1028326287091179612>"
                 await self.msg.edit(view=self)
                 await r.response.send_message(
-                    embed=Embeds.Music.notifications(Functions.get_locale(self.bot, r), r, 2)
+                    embed=Embeds.Music.notifications(user.language, r, 2)
                 )
             else:
                 vc.notifications_level = 1
@@ -583,14 +615,14 @@ class Player(discord.ui.View):
                 button.emoji = "<:ari_notifications_white:964415669816950794>"
                 await self.msg.edit(view=self)
                 await r.response.send_message(
-                    embed=Embeds.Music.notifications(Functions.get_locale(self.bot, r), r, 1)
+                    embed=Embeds.Music.notifications(user.language, r, 1)
                 )
 
         except Exception as error:
             Logger.log("MUSIC", "ERROR", f"Error on player notifications level change (Modal): {error} | Guild ID: {r.guild.id}")
             Logger.log_traceback()
             return await r.response.send_message(
-                embed=Embeds.Music.error(Functions.get_locale(self.bot, r)), ephemeral=True
+                embed=Embeds.Music.error(user.language), ephemeral=True
             )
 
 class DisabledPlayer(discord.ui.View):

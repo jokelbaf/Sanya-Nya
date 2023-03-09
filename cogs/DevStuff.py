@@ -7,7 +7,7 @@ import discord, os, time, sys, io, Config
 from Utils.DevStuff import Views
 
 
-class BotGuild(commands.Cog):
+class DevStuff(commands.Cog):
     def __init__(self, bot: discord.Bot):
         self.bot = bot
     
@@ -16,7 +16,7 @@ class BotGuild(commands.Cog):
         aliases=["cog"]
     )
     @commands.is_owner()
-    async def cogs(self, ctx, action=None, target=None):
+    async def cogs(self, ctx: commands.Context, action=None, target=None):
         if action is not None:
             if target is None:
                 return await ctx.reply(content="Please enter `target` argument.", mention_author=False)
@@ -68,7 +68,7 @@ class BotGuild(commands.Cog):
             else:
                 try:
                     code_msg = await ctx.channel.fetch_message(ctx.message.reference.message_id)
-                    code = code_msg.content.replace(f"{Config.Bot.prefix()}eval ", "").replace(f"{Config.Bot.prefix()}eval", "")
+                    code = code_msg.content.replace(f"{Config.Bot.prefix}eval ", "").replace(f"{Config.Bot.prefix}eval", "")
 
                 except Exception as e:
                     return await ctx.reply(
@@ -135,4 +135,4 @@ class BotGuild(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(BotGuild(bot))
+    bot.add_cog(DevStuff(bot))

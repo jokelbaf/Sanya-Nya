@@ -29,7 +29,7 @@ class EvalView(discord.ui.View):
         await r.response.defer(invisible=True)
 
         code = (await self.ctx.fetch_message(self.code_msg.id)).content
-        code = code.replace("```python", "").replace("```", "").replace(f"{Config.Bot.prefix()}eval ", "").replace(f"{Config.Bot.prefix()}eval", "")
+        code = code.replace("```python", "").replace("```", "").replace(f"{Config.Bot.prefix}eval ", "").replace(f"{Config.Bot.prefix}eval", "")
 
         stdout = sys.stdout
 

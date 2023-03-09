@@ -4,41 +4,11 @@ from discord.commands import SlashCommandGroup, option
 
 from Utils.Music import Views
 from Data.Localizations import Embeds
-from Utils.Bot import Logger, Functions
+from Utils.Bot import Functions, Logger
 
 
-def command_log(ctx: commands.Context, command: str):
-    Logger.log("MUSIC", "COMMAND", f'User {ctx.author.name} ({ctx.author.id}) used "{command}" command. Guild ID - {ctx.guild.id}')
-    
-def slash_command_log(ctx: commands.Context, command: str):
-    Logger.log("MUSIC", "SLASH-COMMAND", f'User {ctx.author.name} ({ctx.author.id}) used slash command "{command}". Guild ID - {ctx.guild.id}')
-
-def command_error_log(ctx: discord.ApplicationContext, error: str, command: str, cmd_type: str):
-    if cmd_type == "default":
-        cmd = "command"
-    else:
-        cmd = "slash command"
-        
-    if command == "play":
-        Logger.log("MUSIC", "ERROR", f"Error on track play ({cmd}): {error} (Guild ID: {ctx.guild.id})")
-    elif command == "replay":
-        Logger.log("MUSIC", "ERROR", f"Error on trach replay ({cmd}): {error} (Guild ID: {ctx.guild.id})")
-    elif command == "pause":
-        Logger.log("MUSIC", "ERROR", f"Error on player pause ({cmd}): {error} (Guild ID: {ctx.guild.id})")
-    elif command == "resume":
-        Logger.log("MUSIC", "ERROR", f"Error on player resume ({cmd}): {error} (Guild ID: {ctx.guild.id})")
-    elif command == "skip":
-        Logger.log("MUSIC", "ERROR", f"Error on track skip ({cmd}): {error} (Guild ID: {ctx.guild.id})")
-    elif command == "stop":
-        Logger.log("MUSIC", "ERROR", f"Error on player stop ({cmd}): {error} (Guild ID: {ctx.guild.id})")
-    elif command == "previous":
-        Logger.log("MUSIC", "ERROR", f"Error on previous track play ({cmd}): {error} (Guild ID: {ctx.guild.id})")
-    elif command == "queue":
-        Logger.log("MUSIC", "ERROR", f"Error in queue command ({cmd}): {error} (Guild ID: {ctx.guild.id})")
-    elif command == "loop":
-        Logger.log("MUSIC", "ERROR", f"Error on track loop ({cmd}): {error} (Guild ID: {ctx.guild.id})")
-    elif command == "volume":
-        Logger.log("MUSIC", "ERROR", f"Error on player volume change ({cmd}): {error} (Guild ID: {ctx.guild.id})")
+def command_error_log(ctx: discord.ApplicationContext, error: str, command: str, cmd_type: str) -> None:
+    return Logger.log("MUSIC", "ERROR", f"Error on {'command' if cmd_type == 'default' else 'slash command'} {command}: {error} (Guild ID: {ctx.guild.id})")
         
 
 class Music(commands.Cog):
@@ -61,10 +31,12 @@ class Music(commands.Cog):
     async def on_wavelink_node_ready(self, node: wavelink.Node):
         Logger.log("WAVELINK", "INFO", f"Integration connected with ID: {node.identifier}")
 
+
     @commands.Cog.listener()
     async def on_wavelink_websocket_closed(self, player: wavelink.Player, reason, code):
         Logger.log("WAVELINK", "WARNING", f"Integration disconnected cause of server error ({code}). Reason: {reason}")
     
+
     @commands.Cog.listener()
     async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
         try:
@@ -85,7 +57,8 @@ class Music(commands.Cog):
                 )
             except Exception:
                 return
-            
+
+
     @commands.Cog.listener()
     async def on_wavelink_track_end(self, player: wavelink.Player, track: wavelink.Track, reason):
         try:
@@ -103,7 +76,7 @@ class Music(commands.Cog):
 
             if vc.queue.is_empty:
                 await vc.message.edit(
-                    embed=Embeds.Music.player_waiting(vc.language or Functions.get_guild_locale(ctx.guild), ctx, Config.Bot.prefix(), self.bot)
+                    embed=Embeds.Music.player_waiting(vc.language or Functions.get_guild_locale(ctx.guild), ctx, Config.Bot.prefix)
                 )
                 await asyncio.sleep(30)
                 if not vc.queue.is_empty or vc.is_playing() is not False:
@@ -125,23 +98,26 @@ class Music(commands.Cog):
             Logger.log("WAVELINK", "ERROR", f"Error in on_wavelink_track_end event: {error}")
             Logger.log_traceback()
 
+
     @commands.command(
         aliases=["play"]
     )
     @commands.guild_only()
     async def player_play(self, ctx: commands.Context, *, song: str = None):
-        command_log(ctx, "play")
+        Functions.command_log(ctx, "play")
+
+        user = await Functions.get_user(self.bot, ctx)
         try:
             async with ctx.typing():
                 await asyncio.sleep(0.1)
 
             if song is None: return await ctx.reply(
-                embed=Embeds.Music.song_is_none(Functions.get_locale(self.bot, ctx)), mention_author=False
+                embed=Embeds.Music.song_is_none(user.language), mention_author=False
             )
 
             if not getattr(ctx.author.voice, "channel", None):
                 return await ctx.reply(
-                    embed=Embeds.Music.join_vc(Functions.get_locale(self.bot, ctx)), mention_author=False
+                    embed=Embeds.Music.join_vc(user.language), mention_author=False
                 )
             elif not ctx.voice_client:
                 vc: wavelink.Player = await ctx.author.voice.channel.connect(cls=wavelink.Player)
@@ -150,7 +126,7 @@ class Music(commands.Cog):
 
             if vc.queue.count > 24:
                 return await ctx.reply(
-                    embed=Embeds.Music.premium_queue_is_full(Functions.get_locale(self.bot, ctx)), mention_author=False
+                    embed=Embeds.Music.premium_queue_is_full(user.language), mention_author=False
                 )
 
             if vc.queue.is_empty and not vc.is_playing():
@@ -159,15 +135,15 @@ class Music(commands.Cog):
                         song = await wavelink.YouTubeTrack.search(query=song, return_first=True)
                     except:
                         return await ctx.reply(
-                            embed=Embeds.Music.song_not_found(Functions.get_locale(self.bot, ctx)), mention_author=False
+                            embed=Embeds.Music.song_not_found(user.language), mention_author=False
                         )
 
                     if int(song.duration) > 3600:
-                        return await ctx.send(embed=Embeds.Music.song_is_too_long(Functions.get_locale(self.bot, ctx)))
+                        return await ctx.send(embed=Embeds.Music.song_is_too_long(user.language))
 
                     await vc.play(song)
                     msg = await ctx.reply(
-                        embed=Embeds.Music.music_player_connected(Functions.get_locale(self.bot, ctx), song, ctx),
+                        embed=Embeds.Music.music_player_connected(user.language, song, ctx),
                         mention_author=False
                     )
 
@@ -184,12 +160,12 @@ class Music(commands.Cog):
                             embed=Embeds.Music.music_player_connected(vc.language, song, ctx)
                         )
                         await ctx.reply(
-                            embed=Embeds.Music.track_added_ctx(Functions.get_locale(self.bot, ctx), ctx, song), mention_author=False
+                            embed=Embeds.Music.track_added_ctx(user.language, ctx, song), mention_author=False
                         )
                         await vc.play(song)
                     except:
                         return await ctx.reply(
-                            embed=Embeds.Music.song_not_found(Functions.get_locale(self.bot, ctx)), mention_author=False
+                            embed=Embeds.Music.song_not_found(user.language), mention_author=False
                         )
 
                 await ctx.guild.change_voice_state(channel=ctx.author.voice.channel, self_deaf=True, self_mute=False)
@@ -197,14 +173,14 @@ class Music(commands.Cog):
                 song = await wavelink.YouTubeTrack.search(query=song, return_first=True)
                 await vc.queue.put_wait(song)
                 await ctx.reply(
-                    embed=Embeds.Music.track_added_ctx(Functions.get_locale(self.bot, ctx), ctx, song), mention_author=False
+                    embed=Embeds.Music.track_added_ctx(user.language, ctx, song), mention_author=False
                 )
 
             vc.ctx = ctx
             if not hasattr(vc, "loop"):
                 setattr(vc, "loop", False)
             if not hasattr(vc, "language"):
-                setattr(vc, "language", Functions.get_locale(self.bot, ctx))
+                setattr(vc, "language", user.language)
             if not hasattr(vc, "notifications_level"):
                 setattr(vc, "notifications_level", 2)
             if not hasattr(vc, "previous_track"):
@@ -214,163 +190,175 @@ class Music(commands.Cog):
             command_error_log(ctx, error, "play", "default")
             Logger.log_traceback()
             return await ctx.reply(
-                embed=Embeds.Music.error(Functions.get_locale(self.bot, ctx)), mention_author=False
+                embed=Embeds.Music.error(user.language), mention_author=False
             )
         
+
     @commands.command(
         aliases=["replay"]
     )
     @commands.guild_only()
     async def player_replay(self, ctx: commands.Context):
-        command_log(ctx, "replay")
+        Functions.command_log(ctx, "replay")
+
+        user = await Functions.get_user(self.bot, ctx)
         try:
             async with ctx.typing():
                 await asyncio.sleep(0.1)
             
             if not ctx.guild.voice_client:
                 return await ctx.reply(
-                    embed=Embeds.Music.nothing_is_playing(Functions.get_locale(self.bot, ctx)), mention_author=False
+                    embed=Embeds.Music.nothing_is_playing(user.language), mention_author=False
                 )
             elif not getattr(ctx.author.voice, "channel", None):
                 return await ctx.reply(
-                    embed=Embeds.Music.join_vc(Functions.get_locale(self.bot, ctx)), mention_author=False
+                    embed=Embeds.Music.join_vc(user.language), mention_author=False
                 )
             else:
                 vc: wavelink.Player = ctx.guild.voice_client
 
             if vc.is_playing() is False:
                 return await ctx.reply(
-                    embed=Embeds.Music.nothing_is_playing(Functions.get_locale(self.bot, ctx)), mention_author=False
+                    embed=Embeds.Music.nothing_is_playing(user.language), mention_author=False
                 )
             
             await vc.seek(0)
             if vc.notifications_level in [1, 2]:
                 return await ctx.reply(
-                    embed=Embeds.Music.replay_ctx(Functions.get_locale(self.bot, ctx)), mention_author=False
+                    embed=Embeds.Music.replay_ctx(user.language), mention_author=False
                 )
             
         except Exception as error:
             command_error_log(ctx, error, "replay", "default")
             Logger.log_traceback()
             return await ctx.reply(
-                embed=Embeds.Music.error(Functions.get_locale(self.bot, ctx)), mention_author=False
+                embed=Embeds.Music.error(user.language), mention_author=False
             )
+
 
     @commands.command(
         aliases=["pause"]
     )
     @commands.guild_only()
     async def player_pause(self, ctx: commands.Context):
-        command_log(ctx, "pause")
+        Functions.command_log(ctx, "pause")
+
+        user = await Functions.get_user(self.bot, ctx)
         try:
             async with ctx.typing():
                 await asyncio.sleep(0.1)
 
             if not ctx.guild.voice_client:
                 return await ctx.reply(
-                    embed=Embeds.Music.nothing_is_playing(Functions.get_locale(self.bot, ctx)), mention_author=False
+                    embed=Embeds.Music.nothing_is_playing(user.language), mention_author=False
                 )
             elif not getattr(ctx.author.voice, "channel", None):
                 return await ctx.reply(
-                    embed=Embeds.Music.join_vc(Functions.get_locale(self.bot, ctx)), mention_author=False
+                    embed=Embeds.Music.join_vc(user.language), mention_author=False
                 )
             else:
                 vc: wavelink.Player = ctx.guild.voice_client
 
             if vc.is_playing() is False: 
                 return await ctx.reply(
-                    embed=Embeds.Music.nothing_is_playing(Functions.get_locale(self.bot, ctx)), mention_author=False
+                    embed=Embeds.Music.nothing_is_playing(user.language), mention_author=False
                 )
 
             if vc.is_paused() == False:
                 await vc.pause()
                 if vc.notifications_level in [1, 2]:
                     return await ctx.reply(
-                        embed=Embeds.Music.paused_ctx(Functions.get_locale(self.bot, ctx), ctx, False), mention_author=False
+                        embed=Embeds.Music.paused_ctx(user.language, ctx, False), mention_author=False
                     )
             else:
                 return await ctx.reply(
-                    embed=Embeds.Music.already_paused(Functions.get_locale(self.bot, ctx)), mention_author=False
+                    embed=Embeds.Music.already_paused(user.language), mention_author=False
                 )
         except Exception as error:
             command_error_log(ctx, error, "pause", "default")
             Logger.log_traceback()
             return await ctx.reply(
-                embed=Embeds.Music.error(Functions.get_locale(self.bot, ctx)), mention_author=False
+                embed=Embeds.Music.error(user.language), mention_author=False
             )
         
+
     @commands.command(
         aliases=["resume"]
     )
     @commands.guild_only()
     async def player_resume(self, ctx: commands.Context):
-        command_log(ctx, "resume")
+        Functions.command_log(ctx, "resume")
+
+        user = await Functions.get_user(self.bot, ctx)
         try:
             async with ctx.typing():
                 await asyncio.sleep(0.1)
             
             if not ctx.guild.voice_client:
                 return await ctx.reply(
-                    embed=Embeds.Music.nothing_is_playing(Functions.get_locale(self.bot, ctx)), mention_author=False
+                    embed=Embeds.Music.nothing_is_playing(user.language), mention_author=False
                 )
             elif not getattr(ctx.author.voice, "channel", None):
                 return await ctx.reply(
-                    embed=Embeds.Music.join_vc(Functions.get_locale(self.bot, ctx)), mention_author=False
+                    embed=Embeds.Music.join_vc(user.language), mention_author=False
                 )
             else:
                 vc: wavelink.Player = ctx.guild.voice_client
 
             if vc.is_playing() is False:
                 return await ctx.reply(
-                    embed=Embeds.Music.nothing_is_playing(Functions.get_locale(self.bot, ctx)), mention_author=False
+                    embed=Embeds.Music.nothing_is_playing(user.language), mention_author=False
                 )
 
             if vc.is_paused() == True:
                 await vc.resume()
                 if vc.notifications_level in [1, 2]:
                     return await ctx.reply(
-                        embed=Embeds.Music.resumed_ctx(Functions.get_locale(self.bot, ctx), ctx, False), mention_author=False
+                        embed=Embeds.Music.resumed_ctx(user.language, ctx, False), mention_author=False
                     )
             else:
                 return await ctx.reply(
-                    embed=Embeds.Music.already_resumed(Functions.get_locale(self.bot, ctx)), mention_author=False
+                    embed=Embeds.Music.already_resumed(user.language), mention_author=False
                 )
         except Exception as error:
             command_error_log(ctx, error, "resume", "default")
             Logger.log_traceback()
             return await ctx.reply(
-                embed=Embeds.Music.error(Functions.get_locale(self.bot, ctx)), mention_author=False
+                embed=Embeds.Music.error(user.language), mention_author=False
             )
+
 
     @commands.command(
         aliases=["skip"]
     )
     @commands.guild_only()
     async def player_skip(self, ctx: commands.Context):
-        command_log(ctx, "skip")
+        Functions.command_log(ctx, "skip")
+
+        user = await Functions.get_user(self.bot, ctx)
         try:
             async with ctx.typing():
                 await asyncio.sleep(0.1)
 
             if not ctx.guild.voice_client:
                 return await ctx.reply(
-                    embed=Embeds.Music.nothing_is_playing(Functions.get_locale(self.bot, ctx)), mention_author=False
+                    embed=Embeds.Music.nothing_is_playing(user.language), mention_author=False
                 )
             elif not getattr(ctx.author.voice, "channel", None):
                 return await ctx.reply(
-                    embed=Embeds.Music.join_vc(Functions.get_locale(self.bot, ctx)), mention_author=False
+                    embed=Embeds.Music.join_vc(user.language), mention_author=False
                 )
             else:
                 vc: wavelink.Player = ctx.guild.voice_client
 
             if vc.queue.is_empty:
                 return await ctx.reply(
-                    embed=Embeds.Music.queue_is_empty(Functions.get_locale(self.bot, ctx)), mention_author=False
+                    embed=Embeds.Music.queue_is_empty(user.language), mention_author=False
                 )
             
             if vc.loop:
                 return await ctx.reply(
-                    embed=Embeds.Music.looped(Functions.get_locale(self.bot, ctx)), mention_author=False
+                    embed=Embeds.Music.looped(user.language), mention_author=False
                 )
             
             track = vc.track
@@ -385,33 +373,36 @@ class Music(commands.Cog):
             )
             if vc.notifications_level in [1, 2]:
                 return await ctx.reply(
-                    embed=Embeds.Music.ctx_skipped(Functions.get_locale(self.bot, ctx)), mention_author=False
+                    embed=Embeds.Music.ctx_skipped(user.language), mention_author=False
                 )
 
         except Exception as error:
             command_error_log(ctx, error, "skip", "default")
             Logger.log_traceback()
             return await ctx.reply(
-                embed=Embeds.Music.error(Functions.get_locale(self.bot, ctx)), mention_author=False
+                embed=Embeds.Music.error(user.language), mention_author=False
             )
+
 
     @commands.command(
         aliases=["stop"]
     )
     @commands.guild_only()
     async def player_stop(self, ctx: commands.Context):
-        command_log(ctx, "stop")
+        Functions.command_log(ctx, "stop")
+
+        user = await Functions.get_user(self.bot, ctx)
         try:
             async with ctx.typing():
                 await asyncio.sleep(0.1)
 
             if not ctx.guild.voice_client:
                 return await ctx.reply(
-                    embed=Embeds.Music.stop_not_connected(Functions.get_locale(self.bot, ctx)), mention_author=False
+                    embed=Embeds.Music.stop_not_connected(user.language), mention_author=False
                 )
             elif not getattr(ctx.author.voice, "channel", None):
                 return await ctx.reply(
-                    embed=Embeds.Music.join_vc(Functions.get_locale(self.bot, ctx)), mention_author=False
+                    embed=Embeds.Music.join_vc(user.language), mention_author=False
                 )
             else:
                 vc: wavelink.Player = ctx.guild.voice_client
@@ -433,40 +424,43 @@ class Music(commands.Cog):
             except:
                 pass
             return await ctx.reply(embed=Embeds.Music.ctx_stopped(
-                Functions.get_locale(self.bot, ctx), ctx), mention_author=False
+                user.language, ctx), mention_author=False
             )
 
         except Exception as error:
             command_error_log(ctx, error, "stop", "default")
             Logger.log_traceback()
             return await ctx.reply(
-                embed=Embeds.Music.error(Functions.get_locale(self.bot, ctx)), mention_author=False
+                embed=Embeds.Music.error(user.language), mention_author=False
             )
         
+
     @commands.command(
         aliases=["previous"]
     )
     @commands.guild_only()
     async def player_previous(self, ctx: commands.Context):
-        command_log(ctx, "previous")
+        Functions.command_log(ctx, "previous")
+
+        user = await Functions.get_user(self.bot, ctx)
         try:
             async with ctx.typing():
                 await asyncio.sleep(0.1)
 
             if not ctx.guild.voice_client:
                 return await ctx.reply(
-                    embed=Embeds.Music.nothing_is_playing(Functions.get_locale(self.bot, ctx)), mention_author=False
+                    embed=Embeds.Music.nothing_is_playing(user.language), mention_author=False
                 )
             elif not getattr(ctx.author.voice, "channel", None):
                 return await ctx.reply(
-                    embed=Embeds.Music.join_vc(Functions.get_locale(self.bot, ctx)), mention_author=False
+                    embed=Embeds.Music.join_vc(user.language), mention_author=False
                 )
             else:
                 vc: wavelink.Player = ctx.guild.voice_client
                 
             if vc.loop:
                 return await ctx.reply(
-                    embed=Embeds.Music.looped(Functions.get_locale(self.bot, ctx)), mention_author=False
+                    embed=Embeds.Music.looped(user.language), mention_author=False
                 )
 
             if vc.previous_track is not None:
@@ -486,143 +480,153 @@ class Music(commands.Cog):
                 )
                 if vc.notifications_level in [1, 2]:
                     return await ctx.reply(
-                        embed=Embeds.Music.returned_ctx(Functions.get_locale(self.bot, ctx)), mention_author=False
+                        embed=Embeds.Music.returned_ctx(user.language), mention_author=False
                     )
             else:
                 return await ctx.reply(
-                    embed=Embeds.Music.previous_track_is_none(Functions.get_locale(self.bot, ctx)), mention_author=False
+                    embed=Embeds.Music.previous_track_is_none(user.language), mention_author=False
                 )
 
         except Exception as error:
             command_error_log(ctx, error, "previous", "default")
             Logger.log_traceback()
             return await ctx.reply(
-                embed=Embeds.Music.error(Functions.get_locale(self.bot, ctx)), mention_author=False
+                embed=Embeds.Music.error(user.language), mention_author=False
             )
+
 
     @commands.command(
         aliases=["loop"]
     )
     @commands.guild_only()
     async def player_loop(self, ctx: commands.Context):
-        command_log(ctx, "loop")
+        Functions.command_log(ctx, "loop")
+
+        user = await Functions.get_user(self.bot, ctx)
         try:
             async with ctx.typing():
                 await asyncio.sleep(0.1)
 
             if not ctx.guild.voice_client:
                 return await ctx.reply(
-                    embed=Embeds.Music.nothing_is_playing(Functions.get_locale(self.bot, ctx)), mention_author=False
+                    embed=Embeds.Music.nothing_is_playing(user.language), mention_author=False
                 )
             elif not getattr(ctx.author.voice, "channel", None):
                 return await ctx.reply(
-                    embed=Embeds.Music.join_vc(Functions.get_locale(self.bot, ctx)), mention_author=False
+                    embed=Embeds.Music.join_vc(user.language), mention_author=False
                 )
             else:
                 vc: wavelink.Player = ctx.guild.voice_client
 
             if vc.is_playing() is False:
                 return await ctx.reply(
-                    embed=Embeds.Music.nothing_is_playing(Functions.get_locale(self.bot, ctx)), mention_author=False
+                    embed=Embeds.Music.nothing_is_playing(user.language), mention_author=False
                 )
 
             if vc.loop:
                 vc.loop = False
                 if vc.notifications_level in [1, 2]:
                     return await ctx.reply(
-                        embed=Embeds.Music.loop_disabled_ctx(Functions.get_locale(self.bot, ctx)), mention_author=False
+                        embed=Embeds.Music.loop_disabled_ctx(user.language), mention_author=False
                     )
             else:
                 vc.loop = True
                 if vc.notifications_level in [1, 2]:
                     return await ctx.reply(
-                        embed=Embeds.Music.loop_enabled_ctx(Functions.get_locale(self.bot, ctx)), mention_author=False
+                        embed=Embeds.Music.loop_enabled_ctx(user.language), mention_author=False
                     )
             
         except Exception as error:
             command_error_log(ctx, error, "loop", "default")
             Logger.log_traceback()
             return await ctx.reply(
-                embed=Embeds.Music.error(Functions.get_locale(self.bot, ctx)), mention_author=False
+                embed=Embeds.Music.error(user.language), mention_author=False
             )
+
 
     @commands.command(
         aliases=["queue"]
     )
     @commands.guild_only()
     async def player_queue(self, ctx: commands.Context):
-        command_log(ctx, "queue")
+        Functions.command_log(ctx, "queue")
+
+        user = await Functions.get_user(self.bot, ctx)
         try:
             async with ctx.typing():
                 await asyncio.sleep(0.1)
 
             if not ctx.guild.voice_client:
                 return await ctx.reply(
-                    embed=Embeds.Music.nothing_is_playing(Functions.get_locale(self.bot, ctx)), mention_author=False
+                    embed=Embeds.Music.nothing_is_playing(user.language), mention_author=False
                 )
             elif not getattr(ctx.author.voice, "channel", None):
                 return await ctx.reply(
-                    embed=Embeds.Music.join_vc(Functions.get_locale(self.bot, ctx)), mention_author=False
+                    embed=Embeds.Music.join_vc(user.language), mention_author=False
                 )
             else:
                 vc: wavelink.Player = ctx.guild.voice_client
             
             if vc.queue.is_empty:
                 return await ctx.reply(
-                    embed=Embeds.Music.queue_is_empty_(Functions.get_locale(self.bot, ctx)), mention_author=False
+                    embed=Embeds.Music.queue_is_empty_(user.language), mention_author=False
                 )
 
             queue = vc.queue.copy()
             return await ctx.reply(
-                embed=Embeds.Music.queue(Functions.get_locale(self.bot, ctx), queue), mention_author=False
+                embed=Embeds.Music.queue(user.language, queue), mention_author=False
             )
         
         except Exception as error:
             command_error_log(ctx, error, "queue", "default")
             Logger.log_traceback()
             return await ctx.reply(
-                embed=Embeds.Music.error(Functions.get_locale(self.bot, ctx)), mention_author=False
+                embed=Embeds.Music.error(user.language), mention_author=False
             )
         
+
     @commands.command(
         aliases=["volume"]
     )
     @commands.guild_only()
     async def player_volume(self, ctx: commands.Context, volume: int = None):
-        command_log(ctx, "volume")
+        Functions.command_log(ctx, "volume")
+
+        user = await Functions.get_user(self.bot, ctx)
         try:
             async with ctx.typing():
                 await asyncio.sleep(0.1)
             
             if not ctx.guild.voice_client:
                 return await ctx.reply(
-                    embed=Embeds.Music.nothing_is_playing(Functions.get_locale(self.bot, ctx)), mention_author=False
+                    embed=Embeds.Music.nothing_is_playing(user.language), mention_author=False
                 )
             elif not getattr(ctx.author.voice, "channel", None):
                 return await ctx.reply(
-                    embed=Embeds.Music.join_vc(Functions.get_locale(self.bot, ctx)), mention_author=False
+                    embed=Embeds.Music.join_vc(user.language), mention_author=False
                 )
             else:
                 vc: wavelink.Player = ctx.guild.voice_client
 
             if not(type(volume) == int) or not(0 <= volume <= 200) or (volume is None):
                 return await ctx.reply(
-                    embed=Embeds.Music.invalid_volume(Functions.get_locale(self.bot, ctx)), mention_author=False
+                    embed=Embeds.Music.invalid_volume(user.language), mention_author=False
                 )
 
             await vc.set_volume(volume)
             if vc.notifications_level in [1, 2]:
                 return await ctx.reply(
-                    embed=Embeds.Music.volume_set_ctx(Functions.get_locale(self.bot, ctx), volume), mention_author=False
+                    embed=Embeds.Music.volume_set_ctx(user.language, volume), mention_author=False
                 )
         
         except Exception as error:
             command_error_log(ctx, error, "volume", "default")
             Logger.log_traceback()
             return await ctx.reply(
-                embed=Embeds.Music.error(Functions.get_locale(self.bot, ctx)), mention_author=False
+                embed=Embeds.Music.error(user.language), mention_author=False
             )
         
+
     music = SlashCommandGroup(
         name="music", 
         description="Music commands for your discord server!",
@@ -634,6 +638,7 @@ class Music(commands.Cog):
         }
     )
         
+
     @music.command(
         name="play",
         description="Play track in current voice channel.",
@@ -659,16 +664,18 @@ class Music(commands.Cog):
     )
     @commands.guild_only()
     async def play(self, ctx: discord.ApplicationContext, song: str):
-        slash_command_log(ctx, "play")
         await ctx.defer()
+
+        Functions.slash_command_log(ctx, "play")
+        user = await Functions.get_user(self.bot, ctx)
         try:
             if song is None:
                 return await ctx.followup.send(
-                    embed=Embeds.Music.song_is_none(Functions.get_locale(self.bot, ctx))
+                    embed=Embeds.Music.song_is_none(user.language)
                 )
 
             if not getattr(ctx.author.voice, "channel", None):
-                return await ctx.followup.send(embed=Embeds.Music.join_vc(Functions.get_locale(self.bot, ctx)))
+                return await ctx.followup.send(embed=Embeds.Music.join_vc(user.language))
             elif not ctx.voice_client:
                 vc: wavelink.Player = await ctx.author.voice.channel.connect(cls=wavelink.Player)
             else:
@@ -676,7 +683,7 @@ class Music(commands.Cog):
 
             if vc.queue.count > 24:
                 return await ctx.followup.send(
-                    embed=Embeds.Music.premium_queue_is_full(Functions.get_locale(self.bot, ctx))
+                    embed=Embeds.Music.premium_queue_is_full(user.language)
                 )
 
             if vc.queue.is_empty and not vc.is_playing():
@@ -685,17 +692,17 @@ class Music(commands.Cog):
                         song = await wavelink.YouTubeTrack.search(query=song, return_first=True)
                     except:
                         return await ctx.followup.send(
-                            embed=Embeds.Music.song_not_found(Functions.get_locale(self.bot, ctx))
+                            embed=Embeds.Music.song_not_found(user.language)
                         )
 
                     if int(song.duration) > 3600:
                         return await ctx.followup.send(
-                            embed=Embeds.Music.song_is_too_long(Functions.get_locale(self.bot, ctx))
+                            embed=Embeds.Music.song_is_too_long(user.language)
                         )
 
                     await vc.play(song)
                     msg = await ctx.followup.send(
-                        embed=Embeds.Music.music_player_connected(Functions.get_locale(self.bot, ctx), song, ctx), wait=True
+                        embed=Embeds.Music.music_player_connected(user.language, song, ctx), wait=True
                     )
 
                     setattr(vc, "message_id", msg.id)
@@ -711,12 +718,12 @@ class Music(commands.Cog):
                             embed=Embeds.Music.music_player_connected(vc.language, song, ctx)
                         )
                         await ctx.followup.send(
-                            embed=Embeds.Music.track_added_ctx(Functions.get_locale(self.bot, ctx), ctx, song)
+                            embed=Embeds.Music.track_added_ctx(user.language, ctx, song)
                         )
                         await vc.play(song)
                     except:
                         msg = await ctx.followup.send(
-                            embed=Embeds.Music.choose_platform(Functions.get_locale(self.bot, ctx))
+                            embed=Embeds.Music.choose_platform(user.language)
                         )
                         await msg.edit(view=Views.PlayersMenu(self.bot, ctx, msg, song))
                         setattr(vc, "message_id", msg.id)
@@ -727,14 +734,14 @@ class Music(commands.Cog):
                 song = await wavelink.YouTubeTrack.search(query=song, return_first=True)
                 await vc.queue.put_wait(song)
                 await ctx.followup.send(
-                    embed=Embeds.Music.track_added_ctx(Functions.get_locale(self.bot, ctx), ctx, song)
+                    embed=Embeds.Music.track_added_ctx(user.language, ctx, song)
                 )
 
             vc.ctx = ctx
             if not hasattr(vc, "loop"):
                 setattr(vc, "loop", False)
             if not hasattr(vc, "language"):
-                setattr(vc, "language", Functions.get_locale(self.bot, ctx))
+                setattr(vc, "language", user.language)
             if not hasattr(vc, "notifications_level"):
                 setattr(vc, "notifications_level", 2)
             if not hasattr(vc, "previous_track"):
@@ -744,9 +751,10 @@ class Music(commands.Cog):
             command_error_log(ctx, error, "play", "slash")
             Logger.log_traceback()
             return await ctx.followup.send(
-                embed=Embeds.Music.error(Functions.get_locale(self.bot, ctx))
+                embed=Embeds.Music.error(user.language)
             )
         
+
     @music.command(
         name="pause",
         description="Pause current track playback.",
@@ -759,42 +767,45 @@ class Music(commands.Cog):
     )
     @commands.guild_only()
     async def pause(self, ctx: discord.ApplicationContext):
-        slash_command_log(ctx, "pause")
         await ctx.defer()
+
+        Functions.slash_command_log(ctx, "pause")
+        user = await Functions.get_user(self.bot, ctx)
         try:
             if not ctx.guild.voice_client:
                 return await ctx.followup.send(
-                    embed=Embeds.Music.nothing_is_playing(Functions.get_locale(self.bot, ctx))
+                    embed=Embeds.Music.nothing_is_playing(user.language)
                 )
             elif not getattr(ctx.author.voice, "channel", None):
                 return await ctx.followup.send(
-                    embed=Embeds.Music.join_vc(Functions.get_locale(self.bot, ctx))
+                    embed=Embeds.Music.join_vc(user.language)
                 )
             else:
                 vc: wavelink.Player = ctx.guild.voice_client
 
             if vc.is_playing() is False: 
                 return await ctx.followup.send(
-                    embed=Embeds.Music.nothing_is_playing(Functions.get_locale(self.bot, ctx))
+                    embed=Embeds.Music.nothing_is_playing(user.language)
                 )
 
             if vc.is_paused() == False:
                 await vc.pause()
                 if vc.notifications_level in [1, 2]:
                     return await ctx.followup.send(
-                        embed=Embeds.Music.paused_ctx(Functions.get_locale(self.bot, ctx), ctx, False)
+                        embed=Embeds.Music.paused_ctx(user.language, ctx, False)
                     )
             else:
                 return await ctx.followup.send(
-                    embed=Embeds.Music.already_paused(Functions.get_locale(self.bot, ctx))
+                    embed=Embeds.Music.already_paused(user.language)
                 )
         except Exception as error:
             command_error_log(ctx, error, "pause", "slash")
             Logger.log_traceback()
             return await ctx.followup.send(
-                embed=Embeds.Music.error(Functions.get_locale(self.bot, ctx))
+                embed=Embeds.Music.error(user.language)
             )
         
+
     @music.command(
         name="resume",
         description="Resume current track playback.",
@@ -807,42 +818,45 @@ class Music(commands.Cog):
     )
     @commands.guild_only()
     async def resume(self, ctx: discord.ApplicationContext):
-        slash_command_log(ctx, "resume")
         await ctx.defer()
+
+        Functions.slash_command_log(ctx, "resume")
+        user = await Functions.get_user(self.bot, ctx)
         try:
             if not ctx.guild.voice_client:
                 return await ctx.followup.send(
-                    embed=Embeds.Music.nothing_is_playing(Functions.get_locale(self.bot, ctx))
+                    embed=Embeds.Music.nothing_is_playing(user.language)
                 )
             elif not getattr(ctx.author.voice, "channel", None):
                 return await ctx.followup.send(
-                    embed=Embeds.Music.join_vc(Functions.get_locale(self.bot, ctx))
+                    embed=Embeds.Music.join_vc(user.language)
                 )
             else:
                 vc: wavelink.Player = ctx.guild.voice_client
 
             if vc.is_playing() is False:
                 return await ctx.followup.send(
-                    embed=Embeds.Music.nothing_is_playing(Functions.get_locale(self.bot, ctx))
+                    embed=Embeds.Music.nothing_is_playing(user.language)
                 )
 
             if vc.is_paused() == True:
                 await vc.resume()
                 if vc.notifications_level in [1, 2]:
                     return await ctx.followup.send(
-                        embed=Embeds.Music.resumed_ctx(Functions.get_locale(self.bot, ctx), ctx, False)
+                        embed=Embeds.Music.resumed_ctx(user.language, ctx, False)
                     )
             else:
                 return await ctx.followup.send(
-                    embed=Embeds.Music.already_resumed(Functions.get_locale(self.bot, ctx))
+                    embed=Embeds.Music.already_resumed(user.language)
                 )
         except Exception as error:
             command_error_log(ctx, error, "resume", "slash")
             Logger.log_traceback()
             return await ctx.followup.send(
-                embed=Embeds.Music.error(Functions.get_locale(self.bot, ctx))
+                embed=Embeds.Music.error(user.language)
             )
         
+
     @music.command(
         name="skip",
         description="Skip current track and play next.",
@@ -855,28 +869,30 @@ class Music(commands.Cog):
     )
     @commands.guild_only()
     async def skip(self, ctx: discord.ApplicationContext):
-        slash_command_log(ctx, "skip")
         await ctx.defer()
+
+        Functions.slash_command_log(ctx, "skip")
+        user = await Functions.get_user(self.bot, ctx)
         try:
             if not ctx.guild.voice_client:
                 return await ctx.followup.send(
-                    embed=Embeds.Music.nothing_is_playing(Functions.get_locale(self.bot, ctx))
+                    embed=Embeds.Music.nothing_is_playing(user.language)
                 )
             elif not getattr(ctx.author.voice, "channel", None):
                 return await ctx.followup.send(
-                    embed=Embeds.Music.join_vc(Functions.get_locale(self.bot, ctx))
+                    embed=Embeds.Music.join_vc(user.language)
                 )
             else:
                 vc: wavelink.Player = ctx.guild.voice_client
 
             if vc.queue.is_empty:
                 return await ctx.followup.send(
-                    embed=Embeds.Music.queue_is_empty(Functions.get_locale(self.bot, ctx))
+                    embed=Embeds.Music.queue_is_empty(user.language)
                 )
             
             if vc.loop:
                 return await ctx.followup.send(
-                    embed=Embeds.Music.looped(Functions.get_locale(self.bot, ctx))
+                    embed=Embeds.Music.looped(user.language)
                 )
 
             track = vc.track
@@ -891,16 +907,17 @@ class Music(commands.Cog):
             )
             if vc.notifications_level in [1, 2]:
                 return await ctx.followup.send(
-                    embed=Embeds.Music.ctx_skipped(Functions.get_locale(self.bot, ctx))
+                    embed=Embeds.Music.ctx_skipped(user.language)
                 )
 
         except Exception as error:
             command_error_log(ctx, error, "skip", "slash")
             Logger.log_traceback()
             return await ctx.followup.send(
-                embed=Embeds.Music.error(Functions.get_locale(self.bot, ctx))
+                embed=Embeds.Music.error(user.language)
             )
         
+
     @music.command(
         name="stop",
         description="Stop current track playback and destroy player.",
@@ -913,16 +930,18 @@ class Music(commands.Cog):
     )
     @commands.guild_only()
     async def stop(self, ctx: discord.ApplicationContext):
-        slash_command_log(ctx, "stop")
         await ctx.defer()
+
+        Functions.slash_command_log(ctx, "stop")
+        user = await Functions.get_user(self.bot, ctx)
         try:
             if not ctx.guild.voice_client:
                 return await ctx.followup.send(
-                    embed=Embeds.Music.stop_not_connected(Functions.get_locale(self.bot, ctx))
+                    embed=Embeds.Music.stop_not_connected(user.language)
                 )
             elif not getattr(ctx.author.voice, "channel", None):
                 return await ctx.followup.send(
-                    embed=Embeds.Music.join_vc(Functions.get_locale(self.bot, ctx))
+                    embed=Embeds.Music.join_vc(user.language)
                 )
             else:
                 vc: wavelink.Player = ctx.guild.voice_client
@@ -944,14 +963,15 @@ class Music(commands.Cog):
             except:
                 pass
             return await ctx.followup.send(
-                embed=Embeds.Music.ctx_stopped(Functions.get_locale(self.bot, ctx), ctx)
+                embed=Embeds.Music.ctx_stopped(user.language, ctx)
             )
 
         except Exception as error:
             command_error_log(ctx, error, "stop", "slash")
             Logger.log_traceback()
-            return await ctx.followup.send(embed=Embeds.Music.error(Functions.get_locale(self.bot, ctx)))
+            return await ctx.followup.send(embed=Embeds.Music.error(user.language))
         
+
     @music.command(
         name="previous",
         description="Return to the previous track and play it.",
@@ -964,23 +984,25 @@ class Music(commands.Cog):
     )
     @commands.guild_only()
     async def previous(self, ctx: discord.ApplicationContext):
-        slash_command_log(ctx, "previous")
         await ctx.defer()
+
+        Functions.slash_command_log(ctx, "previous")
+        user = await Functions.get_user(self.bot, ctx)
         try:
             if not ctx.guild.voice_client:
                 return await ctx.followup.send(
-                    embed=Embeds.Music.nothing_is_playing(Functions.get_locale(self.bot, ctx))
+                    embed=Embeds.Music.nothing_is_playing(user.language)
                 )
             elif not getattr(ctx.author.voice, "channel", None):
                 return await ctx.followup.send(
-                    embed=Embeds.Music.join_vc(Functions.get_locale(self.bot, ctx))
+                    embed=Embeds.Music.join_vc(user.language)
                 )
             else:
                 vc: wavelink.Player = ctx.guild.voice_client
                 
             if vc.loop:
                 return await ctx.followup.send(
-                    embed=Embeds.Music.looped(Functions.get_locale(self.bot, ctx))
+                    embed=Embeds.Music.looped(user.language)
                 )
 
             if vc.previous_track is not None:
@@ -1000,18 +1022,19 @@ class Music(commands.Cog):
                 )
                 if vc.notifications_level in [1, 2]:
                     return await ctx.followup.send(
-                        embed=Embeds.Music.returned_ctx(Functions.get_locale(self.bot, ctx))
+                        embed=Embeds.Music.returned_ctx(user.language)
                     )
             else:
                 return await ctx.followup.send(
-                    embed=Embeds.Music.previous_track_is_none(Functions.get_locale(self.bot, ctx))
+                    embed=Embeds.Music.previous_track_is_none(user.language)
                 )
 
         except Exception as error:
             command_error_log(ctx, error, "previous", "slash")
             Logger.log_traceback()
-            return await ctx.followup.send(embed=Embeds.Music.error(Functions.get_locale(self.bot, ctx)))
+            return await ctx.followup.send(embed=Embeds.Music.error(user.language))
         
+
     @music.command(
         name="loop",
         description="Loop current track.",
@@ -1024,43 +1047,46 @@ class Music(commands.Cog):
     )
     @commands.guild_only()
     async def loop(self, ctx: discord.ApplicationContext):
-        slash_command_log(ctx, "loop")
         await ctx.defer()
+
+        Functions.slash_command_log(ctx, "loop")
+        user = await Functions.get_user(self.bot, ctx)
         try:
             if not ctx.guild.voice_client:
                 return await ctx.followup.send(
-                    embed=Embeds.Music.nothing_is_playing(Functions.get_locale(self.bot, ctx))
+                    embed=Embeds.Music.nothing_is_playing(user.language)
                 )
             elif not getattr(ctx.author.voice, "channel", None):
                 return await ctx.followup.send(
-                    embed=Embeds.Music.join_vc(Functions.get_locale(self.bot, ctx))
+                    embed=Embeds.Music.join_vc(user.language)
                 )
             else:
                 vc: wavelink.Player = ctx.guild.voice_client
 
             if vc.is_playing() is False:
                 return await ctx.followup.send(
-                    embed=Embeds.Music.nothing_is_playing(Functions.get_locale(self.bot, ctx))
+                    embed=Embeds.Music.nothing_is_playing(user.language)
                 )
 
             if vc.loop:
                 vc.loop = False
                 if vc.notifications_level in [1, 2]:
                     return await ctx.followup.send(
-                        embed=Embeds.Music.loop_disabled_ctx(Functions.get_locale(self.bot, ctx))
+                        embed=Embeds.Music.loop_disabled_ctx(user.language)
                     )
             else:
                 vc.loop = True
                 if vc.notifications_level in [1, 2]:
                     return await ctx.followup.send(
-                        embed=Embeds.Music.loop_enabled_ctx(Functions.get_locale(self.bot, ctx))
+                        embed=Embeds.Music.loop_enabled_ctx(user.language)
                     )
             
         except Exception as error:
             command_error_log(ctx, error, "loop", "slash")
             Logger.log_traceback()
-            return await ctx.followup.send(embed=Embeds.Music.error(Functions.get_locale(self.bot, ctx)))
+            return await ctx.followup.send(embed=Embeds.Music.error(user.language))
         
+
     @music.command(
         name="queue",
         description="View current tracks queue.",
@@ -1073,37 +1099,40 @@ class Music(commands.Cog):
     )
     @commands.guild_only()
     async def queue(self, ctx: discord.ApplicationContext):
-        slash_command_log(ctx, "queue")
-        await ctx.defer(ephemeral=True)
+        await ctx.defer()
+
+        Functions.slash_command_log(ctx, "queue")
+        user = await Functions.get_user(self.bot, ctx)
         try:
             if not ctx.guild.voice_client:
                 return await ctx.followup.send(
-                    embed=Embeds.Music.nothing_is_playing(Functions.get_locale(self.bot, ctx))
+                    embed=Embeds.Music.nothing_is_playing(user.language)
                 )
             elif not getattr(ctx.author.voice, "channel", None):
                 return await ctx.followup.send(
-                    embed=Embeds.Music.join_vc(Functions.get_locale(self.bot, ctx))
+                    embed=Embeds.Music.join_vc(user.language)
                 )
             else:
                 vc: wavelink.Player = ctx.guild.voice_client
 
             if vc.queue.is_empty:
                 return await ctx.followup.send(
-                    embed=Embeds.Music.queue_is_empty_(Functions.get_locale(self.bot, ctx))
+                    embed=Embeds.Music.queue_is_empty_(user.language)
                 )
 
             queue = vc.queue.copy()
             return await ctx.followup.send(
-                embed=Embeds.Music.queue(Functions.get_locale(self.bot, ctx), queue)
+                embed=Embeds.Music.queue(user.language, queue)
             )
 
         except Exception as error:
             command_error_log(ctx, error, "queue", "slash")
             Logger.log_traceback()
             return await ctx.followup.send(
-                embed=Embeds.Music.error(Functions.get_locale(self.bot, ctx))
+                embed=Embeds.Music.error(user.language)
             )
         
+
     @music.command(
         name="volume",
         description="Set music player volume (0-200).",
@@ -1129,36 +1158,39 @@ class Music(commands.Cog):
     )
     @commands.guild_only()
     async def volume(self, ctx: discord.ApplicationContext, volume: int):
-        slash_command_log(ctx, "volume")
         await ctx.defer()
+
+        Functions.slash_command_log(ctx, "volume")
+        user = await Functions.get_user(self.bot, ctx)
         try:
             if not ctx.guild.voice_client:
                 return await ctx.followup.send(
-                    embed=Embeds.Music.nothing_is_playing(Functions.get_locale(self.bot, ctx))
+                    embed=Embeds.Music.nothing_is_playing(user.language)
                 )
             elif not getattr(ctx.author.voice, "channel", None):
                 return await ctx.followup.send(
-                    embed=Embeds.Music.join_vc(Functions.get_locale(self.bot, ctx))
+                    embed=Embeds.Music.join_vc(user.language)
                 )
             else:
                 vc: wavelink.Player = ctx.guild.voice_client
 
             if not(0 <= volume <= 200):
                 return await ctx.followup.send(
-                    embed=Embeds.Music.invalid_volume(Functions.get_locale(self.bot, ctx))
+                    embed=Embeds.Music.invalid_volume(user.language)
                 )
 
             await vc.set_volume(volume)
             if vc.notifications_level in [1, 2]:
                 return await ctx.followup.send(
-                    embed=Embeds.Music.volume_set_ctx(Functions.get_locale(self.bot, ctx), volume)
+                    embed=Embeds.Music.volume_set_ctx(user.language, volume)
                 )
         
         except Exception as error:
             command_error_log(ctx, error, "volume", "slash")
             Logger.log_traceback()
-            return await ctx.followup.send(embed=Embeds.Music.error(Functions.get_locale(self.bot, ctx)))
+            return await ctx.followup.send(embed=Embeds.Music.error(user.language))
         
+
     @music.command(
         name="replay",
         description="Replay current track.",
@@ -1171,37 +1203,40 @@ class Music(commands.Cog):
     )
     @commands.guild_only()
     async def replay(self, ctx: discord.ApplicationContext):
-        slash_command_log(ctx, "replay")
         await ctx.defer()
+
+        Functions.slash_command_log(ctx, "replay")
+        user = await Functions.get_user(self.bot, ctx)
         try:
             if not ctx.guild.voice_client:
                 return await ctx.followup.send(
-                    embed=Embeds.Music.nothing_is_playing(Functions.get_locale(self.bot, ctx))
+                    embed=Embeds.Music.nothing_is_playing(user.language)
                 )
             elif not getattr(ctx.author.voice, "channel", None):
                 return await ctx.followup.send(
-                    embed=Embeds.Music.join_vc(Functions.get_locale(self.bot, ctx))
+                    embed=Embeds.Music.join_vc(user.language)
                 )
             else:
                 vc: wavelink.Player = ctx.guild.voice_client
 
             if vc.is_playing() is False:
                 return await ctx.followup.send(
-                    embed=Embeds.Music.nothing_is_playing(Functions.get_locale(self.bot, ctx))
+                    embed=Embeds.Music.nothing_is_playing(user.language)
                 )
             
             await vc.seek(0)
             if vc.notifications_level in [1, 2]:
                 return await ctx.followup.send(
-                    embed=Embeds.Music.replay_ctx(Functions.get_locale(self.bot, ctx))
+                    embed=Embeds.Music.replay_ctx(user.language)
                 )
             
         except Exception as error:
             command_error_log(ctx, error, "replay", "slash")
             Logger.log_traceback()
             return await ctx.followup.send(
-                embed=Embeds.Music.error(Functions.get_locale(self.bot, ctx))
+                embed=Embeds.Music.error(user.language)
             )
+
 
 def setup(bot):
     bot.add_cog(Music(bot))

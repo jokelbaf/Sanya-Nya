@@ -7,7 +7,7 @@ from datetime import datetime as dt
 import Config
 
 class ErrorHandler():
-    def dm_not_supported(language: str):
+    def dm_not_supported(language: str) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xdd5f65,
@@ -23,7 +23,7 @@ class ErrorHandler():
         return embed
 
 class BotInfo():
-    def help(language: str, bot: commands.Bot):
+    def help(language: str, bot: commands.Bot) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xebd8c3,
@@ -32,7 +32,7 @@ class BotInfo():
                 timestamp=dt.now()
             )
             cmds = ""
-            for command in Config.Bot.commands("ru"):
+            for command in Config.Bot.commands_descriptions("ru"):
                 cmds += "`" + command[0] + "`" + " - " + command[1] + "\n"
             embed.add_field(
                 name="Команды",
@@ -60,7 +60,7 @@ class BotInfo():
                 timestamp=dt.now()
             )
             cmds = ""
-            for command in Config.Bot.commands("en"):
+            for command in Config.Bot.commands_descriptions("en"):
                 cmds += "`" + command[0] + "`" + " - " + command[1] + "\n"
             embed.add_field(
                 name="Commands",
@@ -98,7 +98,7 @@ class BotInfo():
         users: int, 
         guilds: int, 
         channels: int
-        ):
+    ) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xebd8c3,
@@ -185,8 +185,70 @@ class BotInfo():
         return embed
         
 
+class BotSettings():
+    def language_arg_missing(language: str) -> discord.Embed:
+        if language == "ru":
+            embed = discord.Embed(
+                color=0xdd5f65,
+                title="Язык не указан",
+                description="`язык` является обязательным аргументом этой команды. Он может быть установлен на `ru` (русский) либо `en` (английский)."
+            )
+        else:
+            embed = discord.Embed(
+                color=0xdd5f65,
+                title="Language arg is missing",
+                description="`language` is a requred argument that is missing. It can be set to `ru` (russian) or `en` (english)."
+            )
+        return embed
+    
+    def invalid_language(language: str) -> discord.Embed:
+        if language == "ru":
+            embed = discord.Embed(
+                color=0xdd5f65,
+                title="Некорректный язык",
+                description="Указано некорректнон значения для аргумента `язык`. Этот параметр может быть установлен на `ru` (русский) либо `en` (английский)."
+            )
+        else:
+            embed = discord.Embed(
+                color=0xdd5f65,
+                title="Invalid language",
+                description="Invalid value for `language` argument. It can be set to `ru` (russian) or `en` (english)."
+            )
+        return embed
+    
+    def language_already_this(language: str) -> discord.Embed:
+        if language == "ru":
+            embed = discord.Embed(
+                color=0xe79940,
+                title="Ничего не изменилось",
+                description="Язык уже установлен на **русский**."
+            )
+        else:
+            embed = discord.Embed(
+                color=0xe79940,
+                title="Nothing changed",
+                description="Language is already set to **english**."
+            )
+        return embed
+    
+    def language_updated(language: str) -> discord.Embed:
+        if language == "ru":
+            embed = discord.Embed(
+                color=0xebd8c3,
+                title="Язык изменён",
+                description="Язык бота для вас изменён на **русский**."
+            )
+        else:
+            embed = discord.Embed(
+                color=0xebd8c3,
+                title="Language updated",
+                description="You successfully set your language to **english**."
+            )
+        return embed
+
+
 class Music():
-    def song_is_none(language: str):
+    def song_is_none(language: str) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xdd5f65,
@@ -201,7 +263,7 @@ class Music():
             )
         return embed
 
-    def join_vc(language: str):
+    def join_vc(language: str) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xdd5f65,
@@ -216,7 +278,7 @@ class Music():
             )
         return embed
 
-    def pause_player_only(language: str):
+    def pause_player_only(language: str) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xdd5f65,
@@ -231,7 +293,7 @@ class Music():
             )
         return embed
 
-    def song_not_found(language: str):
+    def song_not_found(language: str) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xdd5f65,
@@ -246,7 +308,7 @@ class Music():
             )
         return embed
     
-    def resume_player_only(language: str):
+    def resume_player_only(language: str) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xdd5f65,
@@ -261,7 +323,7 @@ class Music():
             )
         return embed
 
-    def music_player_connected(language: str, song: wavelink.YouTubeTrack, ctx: commands.Context):
+    def music_player_connected(language: str, song: wavelink.YouTubeTrack, ctx: commands.Context) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xebd8c3,
@@ -284,7 +346,7 @@ class Music():
         embed.set_image(url=song.thumbnail)
         return embed
 
-    def nothing_is_playing(language: str):
+    def nothing_is_playing(language: str) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xdd5f65,
@@ -299,7 +361,7 @@ class Music():
             )
         return embed
 
-    def loop_nothing_playing(language: str):
+    def loop_nothing_playing(language: str) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xdd5f65,
@@ -314,7 +376,7 @@ class Music():
             )
         return embed
 
-    def paused(language: str, r: discord.Interaction, is_self: bool):
+    def paused(language: str, r: discord.Interaction, is_self: bool) -> discord.Embed:
         if language == "ru":
             if is_self is False:
                 embed = discord.Embed(
@@ -343,7 +405,7 @@ class Music():
                 )
         return embed
     
-    def paused_ctx(language: str, ctx: commands.Context, is_self: bool):
+    def paused_ctx(language: str, ctx: commands.Context, is_self: bool) -> discord.Embed:
         if language == "ru":
             if is_self is False:
                 embed = discord.Embed(
@@ -372,7 +434,7 @@ class Music():
                 )
         return embed
     
-    def already_paused(language: str, ):
+    def already_paused(language: str, ) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xe79940,
@@ -387,7 +449,7 @@ class Music():
             )
         return embed
 
-    def resumed(language: str, r: discord.Interaction, is_self: bool):
+    def resumed(language: str, r: discord.Interaction, is_self: bool) -> discord.Embed:
         if language == "ru":
             if is_self is False:
                 embed = discord.Embed(
@@ -416,7 +478,7 @@ class Music():
                 )
         return embed
     
-    def resumed_ctx(language: str, ctx: commands.Context, is_self: bool):
+    def resumed_ctx(language: str, ctx: commands.Context, is_self: bool) -> discord.Embed:
         if language == "ru":
             if is_self is False:
                 embed = discord.Embed(
@@ -445,7 +507,7 @@ class Music():
                 )
         return embed
     
-    def already_resumed(language: str, ):
+    def already_resumed(language: str, ) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xe79940,
@@ -460,7 +522,7 @@ class Music():
             )
         return embed
 
-    def loop_enabled(language: str, r: discord.Interaction, is_self: bool):
+    def loop_enabled(language: str, r: discord.Interaction, is_self: bool) -> discord.Embed:
         if language == "ru":
             if is_self is False:
                 embed = discord.Embed(
@@ -489,7 +551,7 @@ class Music():
                 )
         return embed
     
-    def loop_enabled_ctx(language: str, ):
+    def loop_enabled_ctx(language: str, ) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xebd8c3,
@@ -504,7 +566,7 @@ class Music():
             )
         return embed
 
-    def loop_disabled(language: str, r: discord.Interaction, is_self: bool):
+    def loop_disabled(language: str, r: discord.Interaction, is_self: bool) -> discord.Embed:
         if language == "ru":
             if is_self is False:
                 embed = discord.Embed(
@@ -533,7 +595,7 @@ class Music():
                 )
         return embed
 
-    def loop_disabled_ctx(language: str):
+    def loop_disabled_ctx(language: str) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xebd8c3,
@@ -548,199 +610,137 @@ class Music():
             )
         return embed
 
-    def track_added(language: str, r: discord.Interaction, song: wavelink.YouTubeTrack):
+    def track_added(language: str, r: discord.Interaction, song: wavelink.YouTubeTrack) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xebd8c3,
                 title=song.title,
                 description=f"Автор: {song.author}\nДлительность: `{str(datetime.timedelta(seconds=song.duration))}`\nСсылка: [Перейти]({song.uri})"
             )
-            if r.user.avatar is not None:
-                embed.set_author(
-                    name=f"{r.user.name} добавил трек в очередь:",
-                    icon_url=r.user.avatar.url
-                )
-            else:
-                embed.set_author(
-                    name=f"{r.user.name} добавил трек в очередь:",
-                    icon_url="https://media.discordapp.net/attachments/929093869394591754/977136974567710790/empty_avatar.png?width=438&height=438"
-                )
+            embed.set_author(
+                name=f"{r.user.name} добавил трек в очередь:",
+                icon_url=r.user.avatar.url if r.user.avatar else r.user.default_avatar.url
+            )
         else:
             embed = discord.Embed(
                 color=0xebd8c3,
                 title=song.title,
                 description=f"Author: {song.author}\nDuration: `{str(datetime.timedelta(seconds=song.duration))}`\nLink: [Open]({song.uri})"
             )
-            if r.user.avatar is not None:
-                embed.set_author(
-                    name=f"{r.user.name} added track to queue:",
-                    icon_url=r.user.avatar.url
-                )
-            else:
-                embed.set_author(
-                    name=f"{r.user.name} added track to queue:",
-                    icon_url="https://media.discordapp.net/attachments/929093869394591754/977136974567710790/empty_avatar.png?width=438&height=438"
-                )
+            embed.set_author(
+                name=f"{r.user.name} added track to queue:",
+                icon_url=r.user.avatar.url if r.user.avatar else r.user.default_avatar.url
+            )
         embed.set_image(
             url=song.thumbnail
         )
         return embed
     
-    def track_added_ctx(language: str, ctx: commands.Context, song: wavelink.YouTubeTrack):
+    def track_added_ctx(language: str, ctx: commands.Context, song: wavelink.YouTubeTrack) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xebd8c3,
                 title=song.title,
                 description=f"Автор: {song.author}\nДлительность: `{str(datetime.timedelta(seconds=song.duration))}`\nСсылка: [Перейти]({song.uri})"
             )
-            
-            if ctx.author.avatar is not None:
-                embed.set_author(
-                    name=f"{ctx.author.name} добавил трек в очередь:",
-                    icon_url=ctx.author.avatar.url
-                )
-            else:
-                embed.set_author(
-                    name=f"{ctx.author.name} добавил трек в очередь:",
-                    icon_url="https://media.discordapp.net/attachments/929093869394591754/977136974567710790/empty_avatar.png?width=438&height=438"
-                )
+            embed.set_author(
+                name=f"{ctx.author.name} добавил трек в очередь:",
+                icon_url=ctx.author.avatar.url if ctx.author.avatar else ctx.author.default_avatar.url
+            )
         else:
             embed = discord.Embed(
                 color=0xebd8c3,
                 title=song.title,
                 description=f"Author: {song.author}\nDuration: `{str(datetime.timedelta(seconds=song.duration))}`\nLink: [Open]({song.uri})"
             )
-
-            if ctx.author.avatar is not None:
-                embed.set_author(
-                    name=f"{ctx.author.name} added track to queue:",
-                    icon_url=ctx.author.avatar.url
-                )
-            else:
-                embed.set_author(
-                    name=f"{ctx.author.name} added track to queue:",
-                    icon_url="https://media.discordapp.net/attachments/929093869394591754/977136974567710790/empty_avatar.png?width=438&height=438"
-                )
+            embed.set_author(
+                name=f"{ctx.author.name} added track to queue:",
+                icon_url=ctx.author.avatar.url if ctx.author.avatar else ctx.author.default_avatar.url
+            )
         embed.set_image(
             url=song.thumbnail
         )
         return embed
     
-    def track_added_to_play(language: str, r: discord.Interaction, song: wavelink.YouTubeTrack):
+    def track_added_to_play(language: str, r: discord.Interaction, song: wavelink.YouTubeTrack) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xebd8c3,
                 title=song.title,
                 description=f"Автор: {song.author}\nДлительность: `{str(datetime.timedelta(seconds=song.duration))}`\nСсылка: [Перейти]({song.uri})"
             )
-            if r.user.avatar is not None: 
-                embed.set_author(
-                    name=f"{r.user.name} включил трек:",
-                    icon_url=r.user.avatar.url
-                )
-            else:
-                embed.set_author(
-                    name=f"{r.user.name} включил трек:",
-                    icon_url="https://media.discordapp.net/attachments/929093869394591754/977136974567710790/empty_avatar.png?width=438&height=438"
-                )
+            embed.set_author(
+                name=f"{r.user.name} включил трек:",
+                icon_url=r.user.avatar.url if r.user.avatar else r.user.default_avatar.url
+            )
         else:
             embed = discord.Embed(
                 color=0xebd8c3,
                 title=song.title,
                 description=f"Author: {song.author}\nDuration: `{str(datetime.timedelta(seconds=song.duration))}`\nLink: [Open]({song.uri})"
             )
-            if r.user.avatar is not None:
-                embed.set_author(
-                    name=f"{r.user.name} set track:",
-                    icon_url=r.user.avatar.url
-                )
-            else:
-                embed.set_author(
-                    name=f"{r.user.name} set track:",
-                    icon_url="https://media.discordapp.net/attachments/929093869394591754/977136974567710790/empty_avatar.png?width=438&height=438"
-                )
+            embed.set_author(
+                name=f"{r.user.name} set track:",
+                icon_url=r.user.avatar.url if r.user.avatar else r.user.default_avatar.url
+            )
         embed.set_image(
             url=song.thumbnail
         )
         return embed
     
-    def self_track_added(language: str, r: discord.Interaction, song: wavelink.YouTubeTrack):
+    def self_track_added(language: str, r: discord.Interaction, song: wavelink.YouTubeTrack) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xebd8c3,
                 title=song.title,
                 description=f"Автор: {song.author}\nДлительность: `{str(datetime.timedelta(seconds=song.duration))}`\nСсылка: [Перейти]({song.uri})"
             )
-            if r.user.avatar is not None:
-                embed.set_author(
-                    name="Трек добавлен в очередь:",
-                    icon_url=r.user.avatar.url
-                )
-            else:
-                embed.set_author(
-                    name="Трек добавлен в очередь:",
-                    icon_url="https://media.discordapp.net/attachments/929093869394591754/977136974567710790/empty_avatar.png?width=438&height=438"
-                )
+            embed.set_author(
+                name="Трек добавлен в очередь:",
+                icon_url=r.user.avatar.url if r.user.avatar else r.user.default_avatar.url
+            )
         else:
             embed = discord.Embed(
                 color=0xebd8c3,
                 title=song.title,
                 description=f"Author: {song.author}\nDuration: `{str(datetime.timedelta(seconds=song.duration))}`\nLink: [Open]({song.uri})"
             )
-            if r.user.avatar is not None:
-                embed.set_author(
-                    name="Track added to the queue:",
-                    icon_url=r.user.avatar.url
-                )
-            else:
-                embed.set_author(
-                    name="Track added to the queue:",
-                    icon_url="https://media.discordapp.net/attachments/929093869394591754/977136974567710790/empty_avatar.png?width=438&height=438"
-                )
+            embed.set_author(
+                name="Track added to the queue:",
+                icon_url=r.user.avatar.url if r.user.avatar else r.user.default_avatar.url
+            )
         embed.set_image(
             url=song.thumbnail
         )
         return embed
 
-    def self_track_added_to_play(language: str, r: discord.Interaction, song: wavelink.YouTubeTrack):
+    def self_track_added_to_play(language: str, r: discord.Interaction, song: wavelink.YouTubeTrack) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xebd8c3,
                 title=song.title,
                 description=f"Автор: {song.author}\nДлительность: `{str(datetime.timedelta(seconds=song.duration))}`\nСсылка: [Перейти]({song.uri})"
             )
-            if r.user.avatar is not None:
-                embed.set_author(
-                    name="Трек включён:",
-                    icon_url=r.user.avatar.url
-                )
-            else:
-                embed.set_author(
-                    name="Трек включён:",
-                    icon_url="https://media.discordapp.net/attachments/929093869394591754/977136974567710790/empty_avatar.png?width=438&height=438"
-                )
+            embed.set_author(
+                name="Трек включён:",
+                icon_url=r.user.avatar.url if r.user.avatar else r.user.default_avatar.url
+            )
         else:
             embed = discord.Embed(
                 color=0xebd8c3,
                 title=song.title,
                 description=f"Author: {song.author}\nDuration: `{str(datetime.timedelta(seconds=song.duration))}`\nLink: [Open]({song.uri})"
             )
-            if r.user.avatar is not None:
-                embed.set_author(
-                    name="Track set:",
-                    icon_url=r.user.avatar.url
-                )
-            else:
-                embed.set_author(
-                    name="Track set:",
-                    icon_url="https://media.discordapp.net/attachments/929093869394591754/977136974567710790/empty_avatar.png?width=438&height=438"
-                )
+            embed.set_author(
+                name="Track set:",
+                icon_url=r.user.avatar.url if r.user.avatar else r.user.default_avatar.url
+            )
         embed.set_image(
             url=song.thumbnail
         )
         return embed
     
-    def looped(language: str):
+    def looped(language: str) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xdd5f65,
@@ -755,7 +755,7 @@ class Music():
             )
         return embed
 
-    def error(language: str):
+    def error(language: str) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xdd5f65,
@@ -770,7 +770,7 @@ class Music():
             )
         return embed
         
-    def stopped(language: str, r: discord.Interaction):
+    def stopped(language: str, r: discord.Interaction) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xdd5f65,
@@ -785,7 +785,7 @@ class Music():
             )
         return embed
     
-    def ctx_stopped(language: str, ctx: commands.Context):
+    def ctx_stopped(language: str, ctx: commands.Context) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xdd5f65,
@@ -800,7 +800,7 @@ class Music():
             )
         return embed
 
-    def replay(language: str, r: discord.Interaction, is_self: bool):
+    def replay(language: str, r: discord.Interaction, is_self: bool) -> discord.Embed:
         if language == "ru":
             if is_self is False:
                 embed = discord.Embed(
@@ -829,7 +829,7 @@ class Music():
                 )
         return embed
     
-    def replay_ctx(language: str):
+    def replay_ctx(language: str) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xebd8c3,
@@ -844,7 +844,7 @@ class Music():
             )
         return embed
     
-    def queue_is_empty_(language: str):
+    def queue_is_empty_(language: str) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xdd5f65,
@@ -859,7 +859,7 @@ class Music():
             )
         return embed
 
-    def queue(language: str, queue: wavelink.queue.Queue):
+    def queue(language: str, queue: wavelink.queue.Queue) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xebd8c3,
@@ -894,7 +894,7 @@ class Music():
                 song_count += 1
         return embed
 
-    def song_is_too_long(language: str):
+    def song_is_too_long(language: str) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xdd5f65,
@@ -909,7 +909,7 @@ class Music():
             )
         return embed
 
-    def player_destroyed(language: str):
+    def player_destroyed(language: str) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xdd5f65,
@@ -924,7 +924,7 @@ class Music():
             )
         return embed
 
-    def queue_is_empty(language: str):
+    def queue_is_empty(language: str) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xdd5f65,
@@ -939,7 +939,7 @@ class Music():
             )
         return embed
 
-    def channel_is_empty(language: str):
+    def channel_is_empty(language: str) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xdd5f65,
@@ -954,7 +954,7 @@ class Music():
             )
         return embed
 
-    def player_waiting(language: str, ctx: commands.Context, prefix: str, bot: commands.Bot):
+    def player_waiting(language: str, ctx: commands.Context, prefix: str) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xa66f8b,
@@ -977,7 +977,7 @@ class Music():
             )
         return embed
 
-    def returned(language: str, r: discord.Interaction, is_self: bool):
+    def returned(language: str, r: discord.Interaction, is_self: bool) -> discord.Embed:
         if language == "ru":
             if is_self is False:
                 embed = discord.Embed(
@@ -1006,7 +1006,7 @@ class Music():
                 )
         return embed
     
-    def returned_ctx(language: str):
+    def returned_ctx(language: str) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xebd8c3,
@@ -1021,7 +1021,7 @@ class Music():
             )
         return embed
     
-    def previous_track_is_none(language: str):
+    def previous_track_is_none(language: str) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xdd5f65,
@@ -1036,7 +1036,7 @@ class Music():
             )
         return embed
 
-    def stop_not_connected(language: str):
+    def stop_not_connected(language: str) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xdd5f65,
@@ -1051,7 +1051,7 @@ class Music():
             )
         return embed
 
-    def skipped(language: str, r: discord.Interaction, is_self: bool):
+    def skipped(language: str, r: discord.Interaction, is_self: bool) -> discord.Embed:
         if language == "ru":
             if is_self is False:
                 embed = discord.Embed(
@@ -1080,7 +1080,7 @@ class Music():
                 )
         return embed
         
-    def ctx_skipped(language: str):
+    def ctx_skipped(language: str) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xebd8c3,
@@ -1095,7 +1095,7 @@ class Music():
             )
         return embed
 
-    def voice_client_not_connected(language: str):
+    def voice_client_not_connected(language: str) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xdd5f65,
@@ -1110,7 +1110,7 @@ class Music():
             )
         return embed
 
-    def invalid_volume(language: str):
+    def invalid_volume(language: str) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xdd5f65,
@@ -1125,7 +1125,7 @@ class Music():
             )
         return embed
     
-    def volume_set(language: str, r: discord.Interaction, volume):
+    def volume_set(language: str, r: discord.Interaction, volume) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xebd8c3,
@@ -1140,7 +1140,7 @@ class Music():
             )
         return embed
     
-    def volume_set_ctx(language: str, volume):
+    def volume_set_ctx(language: str, volume) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xebd8c3,
@@ -1155,7 +1155,7 @@ class Music():
             )
         return embed
     
-    def self_volume_set(language: str, volume):
+    def self_volume_set(language: str, volume) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xebd8c3,
@@ -1170,7 +1170,7 @@ class Music():
             )
         return embed
 
-    def notifications(language: str, r: discord.Interaction, level: int):
+    def notifications(language: str, r: discord.Interaction, level: int) -> discord.Embed:
         if language == "ru":
             if level == 0:
                 embed = discord.Embed(
@@ -1211,7 +1211,7 @@ class Music():
                 )
         return embed
     
-    def queue_is_full(language: str):
+    def queue_is_full(language: str) -> discord.Embed:
         if language == "ru":
             embed = discord.Embed(
                 color=0xb74e4e,

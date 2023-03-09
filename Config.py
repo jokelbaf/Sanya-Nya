@@ -1,49 +1,30 @@
-"""SanyaBot configuration. Includes texts for descriptions, 
+"""
+SanyaBot configuration. Includes texts for descriptions, 
 images, Bot configuration like «Developer Mode» and 
-some permament data like links and credentials."""
+some permament data like links and credentials.
+"""
 
 import discord, os
 
-class Bot():
-    # Bot language. Can be set to russian (ru), english (en), or auto
+class Bot:
 
-    # If language is set to auto:
-    # 
-    # 1. Bot will try to detect user's client language
-    #
-    # 2. If it's impossibe to detect client language (e.g. in prefixed commands), 
-    # bot will try to use guild preffered language
-    #
-    # 3. If event guild preffered language is not defined (e.g. in DM's), bot
-    # will try to get language from cache
-    #
-    # 4. If language is still not defined, bot will use alternative language
-    # which you can set below
-    def language():
-        return "auto"
-
-    # Used if language /\ is set to auto and it's impossible to detect client language
-    # Can be set to russian (ru) or english (en)
-    def alternative_language():
-        return "ru"
-
-    # The time that the user's locale will be stored in the bot's cache
-    def cache_time():
-        return 900
+    # The time that user will be stored in the bot's cache
+    cache_time: int = 900
 
     # Max amount of users that can be stored in cache at the same time
-    def max_cached_users():
-        return 1000
+    max_cached_users: int = 1000
 
     # 0 - No actions will be logged
     # 1 - Actions will be logged to console only
     # 2 - Actions will be logged to txt file in ./logs/{time}.txt
     # 3 - Actions will be logged both to terminal and to txt file
-    def logs_lvl():
-        return 3
+    logs_lvl: int = 3
+
+    # Used when Bot is unable to detect user's language
+    default_language: str = "en"
 
     # Descriptions for all commands (Displayed in help command)
-    def commands(language: str):
+    def commands_descriptions(language: str) -> list[list[str]]:
         if language == "ru":
             return [
                 ["ping", "Текущий пинг бота"],
@@ -78,31 +59,27 @@ class Bot():
             ]
 
     # You can change bot prefix here.
-    def prefix():
-        return "s!"
+    prefix: str = "s!"
 
     # Bot presence type and name (text)
-    def presence():
-        return [discord.ActivityType.watching, "тебе в душу"]
-
-
-class Icons():
-    # Icon which Bot will use when discord.User or discord.Guild avatar is None. 
-    def empty():
-        return "https://media.discordapp.net/attachments/929093869394591754/977136974567710790/empty_avatar.png?width=439&height=439"
+    # 
+    # Available types are:
+    # - discord.ActivityType.watching
+    # - discord.ActivityType.streaming
+    # - discord.ActivityType.competing
+    # - discord.ActivityType.listening
+    # - discord.ActivityType.playing
+    presence = [discord.ActivityType.watching, "тебе в душу"]
 
   
-# This is used for music to work.
+# Stuff for music to work.
 #
 # Files to host Lavalink on your PC:
 # Lavalink.jar - https://ci.fredboat.com/viewLog.html?buildId=lastSuccessful&buildTypeId=Lavalink_Build&tab=artifacts&guest=1
 # application.yml - https://github.com/freyacodes/Lavalink#server-configuration
-class Lavalink():
-    def host():
-        return os.environ.get("LAVALINK_HOST")
+class Lavalink:
+    def host() -> str: return os.getenv("LAVALINK_HOST")
     
-    def port():
-        return os.environ.get("LAVALINK_PORT")
+    def port() -> int: return os.getenv("LAVALINK_PORT")
     
-    def password():
-        return os.environ.get("LAVALINK_PWD")
+    def password() -> str: return os.getenv("LAVALINK_PWD")

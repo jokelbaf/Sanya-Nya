@@ -17,8 +17,8 @@ venv/
 *.txt
 env/
 .vs/
-.python-version
 __pycache__
 .vs/*
 .vscode/*
 .coverage
+*.env

@@ -11,6 +11,7 @@ class SanyaInfo(commands.Cog):
     def __init__(self, bot: discord.Bot):
         self.bot = bot
 
+
     @slash_command(
         name="ping",
         description="View current Sanya's ping.",
@@ -23,9 +24,14 @@ class SanyaInfo(commands.Cog):
     )
     async def ping(self, ctx: discord.ApplicationContext):
         await ctx.defer()
+
+        Functions.slash_command_log(ctx, "ping")
+        user = await Functions.get_user(self.bot, ctx)
+        
         return await ctx.followup.send(
-            content = Messages.BotInfo.ping(Functions.get_locale(self.bot, ctx), self.bot)
+            content = Messages.BotInfo.ping(user.language, self.bot)
         )
+
 
     @commands.command(
         aliases=["ping"]
@@ -33,10 +39,15 @@ class SanyaInfo(commands.Cog):
     async def ping_command(self, ctx: commands.Context):
         async with ctx.typing():
             await asyncio.sleep(0.1)
+
+        Functions.command_log(ctx, "ping")
+        user = await Functions.get_user(self.bot, ctx)
+
         return await ctx.reply(
-            content = Messages.BotInfo.ping(Functions.get_locale(self.bot, ctx), self.bot),
+            content = Messages.BotInfo.ping(user.language, self.bot),
             mention_author=False
         )
+
 
     @slash_command(
         name="help",
@@ -50,9 +61,14 @@ class SanyaInfo(commands.Cog):
     )
     async def help(self, ctx: discord.ApplicationContext):
         await ctx.defer()
+
+        Functions.slash_command_log(ctx, "help")
+        user = await Functions.get_user(self.bot, ctx)
+
         return await ctx.followup.send(
-            embed=Embeds.BotInfo.help(Functions.get_locale(self.bot, ctx), self.bot)
+            embed=Embeds.BotInfo.help(user.language, self.bot)
         )
+
 
     @commands.command(
         aliases=["help"]
@@ -60,10 +76,15 @@ class SanyaInfo(commands.Cog):
     async def help_command(self, ctx: commands.Context):
         async with ctx.typing():
             await asyncio.sleep(0.1)
+
+        Functions.command_log(ctx, "help")
+        user = await Functions.get_user(self.bot, ctx)
+
         return await ctx.reply(
-            embed=Embeds.BotInfo.help(Functions.get_locale(self.bot, ctx), self.bot),
+            embed=Embeds.BotInfo.help(user.language, self.bot),
             mention_author=False
         )
+
 
     @slash_command(
         name="status",
@@ -78,10 +99,13 @@ class SanyaInfo(commands.Cog):
     async def status(self, ctx: discord.ApplicationContext):
         await ctx.defer()
 
+        Functions.slash_command_log(ctx, "status")
+        user = await Functions.get_user(self.bot, ctx)
+
         class LinkButton(discord.ui.View):
             def __init__(self, bot: discord.Bot):
                 super().__init__()
-                self.add_item(discord.ui.Button(label="Важная информация" if Functions.get_locale(bot, ctx) == "ru" else "Important info", url="https://www.youtube.com/watch?v=dQw4w9WgXcQ&ab_channel=RickAstley"))
+                self.add_item(discord.ui.Button(label="Важная информация" if user.language == "ru" else "Important info", url="https://www.youtube.com/watch?v=dQw4w9WgXcQ&ab_channel=RickAstley"))
 
         uptime = datetime.now() - self.bot.start_time
         hours = int(uptime.seconds / 3600)
@@ -93,7 +117,7 @@ class SanyaInfo(commands.Cog):
 
         return await ctx.followup.send(
             embed=Embeds.BotInfo.status(
-                language = Functions.get_locale(self.bot, ctx),
+                language = user.language,
                 uptime_days = str(days), 
                 uptime_hours = str(hours), 
                 os_name = platform.system(), 
@@ -109,6 +133,7 @@ class SanyaInfo(commands.Cog):
             view=LinkButton(self.bot)
         )
 
+
     @commands.command(
         aliases=["status"]
     )
@@ -116,10 +141,13 @@ class SanyaInfo(commands.Cog):
         async with ctx.typing():
             await asyncio.sleep(0.1)
 
+        Functions.command_log(ctx, "status")
+        user = await Functions.get_user(self.bot, ctx)
+
         class LinkButton(discord.ui.View):
             def __init__(self, bot: discord.Bot):
                 super().__init__()
-                self.add_item(discord.ui.Button(label="Важная информация" if Functions.get_locale(bot, ctx) == "ru" else "Important info", url="https://www.youtube.com/watch?v=dQw4w9WgXcQ&ab_channel=RickAstley"))
+                self.add_item(discord.ui.Button(label="Важная информация" if user.language == "ru" else "Important info", url="https://www.youtube.com/watch?v=dQw4w9WgXcQ&ab_channel=RickAstley"))
 
         uptime = datetime.now() - self.bot.start_time
         hours = int(uptime.seconds / 3600)
@@ -131,7 +159,7 @@ class SanyaInfo(commands.Cog):
 
         return await ctx.reply(
             embed=Embeds.BotInfo.status(
-                language = Functions.get_locale(self.bot, ctx),
+                language = user.language,
                 uptime_days = str(days), 
                 uptime_hours = str(hours), 
                 os_name = platform.system(), 
@@ -147,6 +175,7 @@ class SanyaInfo(commands.Cog):
             view=LinkButton(self.bot),
             mention_author=False
         )
+
 
 def setup(bot):
     bot.add_cog(SanyaInfo(bot))
