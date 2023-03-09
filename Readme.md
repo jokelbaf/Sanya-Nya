@@ -1,6 +1,6 @@
 ![Image](https://media.discordapp.net/attachments/1029785771839864852/1029785831180877864/banner.gif) 
 
-![](https://img.shields.io/badge/bot_version-v1.0.4-%23ebd8c3?style=for-the-badge&logo=python&logoColor=white)  ![](https://img.shields.io/badge/bot_language-russian_/_english-%23c5d9d7?style=for-the-badge)
+![](https://img.shields.io/badge/bot_version-v1.0.5-%23ebd8c3?style=for-the-badge&logo=python&logoColor=white)  ![](https://img.shields.io/badge/bot_language-russian_/_english-%23c5d9d7?style=for-the-badge)
 ****
 
 This is a repo with source code for Sanya-nya Discord bot. It plays music from YouTube and works both on slash and prefixed commands.
@@ -39,9 +39,9 @@ This bot is completely ready to be hosted on Railway:
 **Important:** If you are going to host this bot by yourself, I highly recommend to use **your** lavalink server hosted by **you** or on a **hosting**. I'm too lazy to look for ways of doing it but you should definitely come up with something.
 
 # Additional info
-- Remember that bots that play music from YouTube violate discord rules and will never be verified by discord, and may even be banned.
+- Remember that bots that play music from YouTube violate discord rules and will never be verified by Discord, and may even be banned.
 
-- This bot is just a fun project, it contains the code from one of my other bot's old modules, which was abandoned due to an update to the discord rules.
+- This bot is just a fun project, it contains the code from one of my other bot's old modules, which was abandoned due to an update to the Discord rules.
 
 - If you found a bug you can create an issue and if I have time I will look through it. Pull requests are also welcome.
 
