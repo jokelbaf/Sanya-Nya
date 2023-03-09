@@ -32,8 +32,8 @@ This bot is completely ready to be hosted on Railway:
 3. Create an application on [Discord Developer Portal](https://discord.com/developers/applications).
 4. Add this newly created bot to your server. Invite url can be generated on application settings page.
 5. Go to [railway.app](https://railway.app), connect your GitHub account and deploy your cloned repo.
-6. Set your bot token as an enviromental variable named `BOT_TOKEN` on Railway.
-7. In the same Railway project as you bot is located, add Postgres database servce.
+6. Set your bot token as an environmental variable named `BOT_TOKEN` on Railway.
+7. In the same Railway project as your bot is located, add Postgres database service..
 8. You are done!
 
 **Important:** If you are going to host this bot by yourself, I highly recommend to use **your** lavalink server hosted by **you** or on a **hosting**. I'm too lazy to look for ways of doing it but you should definitely come up with something.
