@@ -1,7 +1,7 @@
 """
 SanyaBot configuration. Includes texts for descriptions, 
 images, Bot configuration like «Developer Mode» and 
-some permament data like links and credentials.
+some permanent data like links and credentials.
 """
 
 import discord, os

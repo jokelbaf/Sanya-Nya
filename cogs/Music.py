@@ -156,21 +156,26 @@ class Music(commands.Cog):
                 else:
                     try:
                         song = await wavelink.YouTubeTrack.search(query=song, return_first=True)
-                        await vc.message.edit(
-                            embed=Embeds.Music.music_player_connected(vc.language, song, ctx)
-                        )
-                        await ctx.reply(
-                            embed=Embeds.Music.track_added_ctx(user.language, ctx, song), mention_author=False
-                        )
-                        await vc.play(song)
                     except:
                         return await ctx.reply(
                             embed=Embeds.Music.song_not_found(user.language), mention_author=False
                         )
+                    await vc.message.edit(
+                        embed=Embeds.Music.music_player_connected(vc.language, song, ctx)
+                    )
+                    await ctx.reply(
+                        embed=Embeds.Music.track_added_ctx(user.language, ctx, song), mention_author=False
+                    )
+                    await vc.play(song)
 
                 await ctx.guild.change_voice_state(channel=ctx.author.voice.channel, self_deaf=True, self_mute=False)
             else:
-                song = await wavelink.YouTubeTrack.search(query=song, return_first=True)
+                try:
+                    song = await wavelink.YouTubeTrack.search(query=song, return_first=True)
+                except:
+                    return await ctx.reply(
+                        embed=Embeds.Music.song_not_found(user.language), mention_author=False
+                    )
                 await vc.queue.put_wait(song)
                 await ctx.reply(
                     embed=Embeds.Music.track_added_ctx(user.language, ctx, song), mention_author=False
@@ -713,7 +718,12 @@ class Music(commands.Cog):
                     )
                 else:
                     try:
-                        song = await wavelink.YouTubeTrack.search(query=song, return_first=True)
+                        try:
+                            song = await wavelink.YouTubeTrack.search(query=song, return_first=True)
+                        except:
+                            return await ctx.followup.send(
+                                embed=Embeds.Music.song_not_found(user.language)
+                            )
                         await vc.message.edit(
                             embed=Embeds.Music.music_player_connected(vc.language, song, ctx)
                         )
@@ -722,16 +732,18 @@ class Music(commands.Cog):
                         )
                         await vc.play(song)
                     except:
-                        msg = await ctx.followup.send(
-                            embed=Embeds.Music.choose_platform(user.language)
+                        return await ctx.followup.send(
+                            embed=Embeds.Music.song_not_found(user.language)
                         )
-                        await msg.edit(view=Views.PlayersMenu(self.bot, ctx, msg, song))
-                        setattr(vc, "message_id", msg.id)
-                        setattr(vc, "message", msg)
 
                 await ctx.guild.change_voice_state(channel=ctx.author.voice.channel, self_deaf=True, self_mute=False)
             else:
-                song = await wavelink.YouTubeTrack.search(query=song, return_first=True)
+                try:
+                    song = await wavelink.YouTubeTrack.search(query=song, return_first=True)
+                except:
+                    return await ctx.followup.send(
+                        embed=Embeds.Music.song_not_found(user.language)
+                    )
                 await vc.queue.put_wait(song)
                 await ctx.followup.send(
                     embed=Embeds.Music.track_added_ctx(user.language, ctx, song)
