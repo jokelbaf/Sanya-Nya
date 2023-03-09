@@ -1,4 +1,4 @@
-"""Localization of Bot messages (not embeds)"""
+"""Localization of Bot messages"""
 
 import discord
 

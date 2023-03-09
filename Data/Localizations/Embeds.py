@@ -197,7 +197,7 @@ class BotSettings():
             embed = discord.Embed(
                 color=0xdd5f65,
                 title="Language arg is missing",
-                description="`language` is a requred argument that is missing. It can be set to `ru` (russian) or `en` (english)."
+                description="`language` is a required argument that is missing. It can be set to `ru` (russian) or `en` (english)."
             )
         return embed
     
@@ -206,7 +206,7 @@ class BotSettings():
             embed = discord.Embed(
                 color=0xdd5f65,
                 title="Некорректный язык",
-                description="Указано некорректнон значения для аргумента `язык`. Этот параметр может быть установлен на `ru` (русский) либо `en` (английский)."
+                description="Указано некорректное значения для аргумента `язык`. Этот параметр может быть установлен на `ru` (русский) либо `en` (английский)."
             )
         else:
             embed = discord.Embed(
@@ -751,7 +751,7 @@ class Music():
             embed = discord.Embed(
                 color=0xdd5f65,
                 title="Loop is enabled",
-                description="You need to diable track loop before using this command."
+                description="You need to disable track loop before using this command."
             )
         return embed
 
@@ -766,7 +766,7 @@ class Music():
             embed = discord.Embed(
                 color=0xdd5f65,
                 title="Error",
-                description="Error occured while processing your request. Developers were notified."
+                description="Error occurred while processing your request. Developers were notified."
             )
         return embed
         
@@ -935,7 +935,7 @@ class Music():
             embed = discord.Embed(
                 color=0xdd5f65,
                 title="Queue is empty",
-                description="Can not skip this track and play next song because queue is emtpy."
+                description="Can not skip this track and play next song because queue is empty."
             )
         return embed
 
