@@ -1,7 +1,8 @@
+wavelink==2.1.0 --no-deps
 cachetools==5.3.0
 aioconsole==0.6.1
 pydantic==1.10.7
-wavelink==2.1.0
 asyncpg==0.27.0
 py-cord==2.4.1
 psutil==5.9.5
+yarl~=1.8.2
