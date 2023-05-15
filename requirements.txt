@@ -1,4 +1,4 @@
-wavelink==2.1.0 --no-deps
+wavelink==2.1.0 --install-option="--no-deps"
 cachetools==5.3.0
 aioconsole==0.6.1
 pydantic==1.10.7
