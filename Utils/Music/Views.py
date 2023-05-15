@@ -44,7 +44,7 @@ class SongModal(Modal):
                 )
 
             try:
-                song = await wavelink.YouTubeTrack.search(query=self.children[0].value, return_first=True)
+                song = await wavelink.YouTubeTrack.search(self.children[0].value, return_first=True)
             except:
                 return await r.followup.send(
                     embed=Embeds.Music.song_not_found(user.language)
@@ -161,7 +161,7 @@ class Player(discord.ui.View):
             else:
                 vc: wavelink.Player = r.guild.voice_client
             
-            if vc.previous_track is not None:
+            if vc.previous is not None:
                 if vc.loop:
                     vc.loop = False
                     for b in self.children:
@@ -169,35 +169,33 @@ class Player(discord.ui.View):
                             b.style = discord.ButtonStyle.gray
                             b.emoji = "<:av_loop:1028326291843338300>"
 
-                track = await wavelink.YouTubeTrack.search(query=vc.track.title, return_first=True)
-                previous_track = await wavelink.YouTubeTrack.search(query=vc.previous_track.title, return_first=True)
+                vc.queue.put_at_front(vc.current)
+                vc.queue.put_at_front(vc.previous)
 
-                vc.queue.put_at_front(track)
-                vc.queue.put_at_front(previous_track)
-
-                vc.previous_track = None
-
-                postition = int(vc.track.length) * 10000
-                await vc.seek(position=postition)
+                position = int(vc.current.length) * 10000
+                await vc.seek(position=position)
 
                 if vc.notifications_level == 2:
                     await self.msg.edit(
-                        embed=Embeds.Music.music_player_connected(vc.language, previous_track, self.ctx), view=self
+                        embed=Embeds.Music.music_player_connected(vc.language, vc.previous, self.ctx), view=self
                     )
                     await r.response.send_message(
                         embed=Embeds.Music.returned(user.language, r, False)
                     )
                 elif vc.notifications_level == 1:
                     await self.msg.edit(
-                        embed=Embeds.Music.music_player_connected(vc.language, previous_track, self.ctx), view=self
+                        embed=Embeds.Music.music_player_connected(vc.language, vc.previous, self.ctx), view=self
                     )
                     await r.response.send_message(
                         embed=Embeds.Music.returned(user.language, r, True), ephemeral=True
                     )
                 else:
-                    return await r.response.edit_message(
-                        embed=Embeds.Music.music_player_connected(vc.language, previous_track, self.ctx), view=self
+                    await r.response.edit_message(
+                        embed=Embeds.Music.music_player_connected(vc.language, vc.previous, self.ctx), view=self
                     )
+
+                vc.previous = None
+
             else:
                 return await r.response.send_message(
                     embed=Embeds.Music.previous_track_is_none(user.language), ephemeral=True
@@ -302,12 +300,12 @@ class Player(discord.ui.View):
                         b.style = discord.ButtonStyle.gray
                         b.emoji = "<:av_loop:1028326291843338300>"
 
-            track = vc.track
-            vc.previous_track = track
+            track = vc.current
+            vc.previous = track
             
-            postition = int(vc.track.length) * 10000
-            await vc.seek(position=postition)
-            song = vc.track
+            position = int(vc.current.length) * 10000
+            await vc.seek(position=position)
+            song = vc.current
 
             if vc.notifications_level == 2:
                 await self.msg.edit(

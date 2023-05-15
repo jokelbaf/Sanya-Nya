@@ -323,18 +323,23 @@ class Music():
             )
         return embed
 
-    def music_player_connected(language: str, song: wavelink.YouTubeTrack, ctx: commands.Context) -> discord.Embed:
+    def music_player_connected(
+            language: str, 
+            song: wavelink.YouTubeTrack | wavelink.GenericTrack, 
+            ctx: commands.Context
+        ) -> discord.Embed:
+
         if language == "ru":
             embed = discord.Embed(
                 color=0xebd8c3,
                 title=f"{song.title}",
-                description=f"[Открыть Трек]({song.uri}) - `{str(datetime.timedelta(seconds=song.duration))}`\n\n**Подключено пользователем {ctx.author.name}**"
+                description=f"[Открыть Трек]({song.uri}) - `{str(datetime.timedelta(milliseconds=song.duration))}`\n\n**Подключено пользователем {ctx.author.name}**"
             )
         else:
             embed = discord.Embed(
                 color=0xebd8c3,
                 title=f"{song.title}",
-                description=f"[Open Track]({song.uri}) - `{str(datetime.timedelta(seconds=song.duration))}`\n\n**Player connected by: {ctx.author.name}**"
+                description=f"[Open Track]({song.uri}) - `{str(datetime.timedelta(milliseconds=song.duration))}`\n\n**Player connected by: {ctx.author.name}**"
             )
         embed.set_author(
             name=f"{song.author}",
@@ -615,7 +620,7 @@ class Music():
             embed = discord.Embed(
                 color=0xebd8c3,
                 title=song.title,
-                description=f"Автор: {song.author}\nДлительность: `{str(datetime.timedelta(seconds=song.duration))}`\nСсылка: [Перейти]({song.uri})"
+                description=f"Автор: {song.author}\nДлительность: `{str(datetime.timedelta(milliseconds=song.duration))}`\nСсылка: [Перейти]({song.uri})"
             )
             embed.set_author(
                 name=f"{r.user.name} добавил трек в очередь:",
@@ -625,7 +630,7 @@ class Music():
             embed = discord.Embed(
                 color=0xebd8c3,
                 title=song.title,
-                description=f"Author: {song.author}\nDuration: `{str(datetime.timedelta(seconds=song.duration))}`\nLink: [Open]({song.uri})"
+                description=f"Author: {song.author}\nDuration: `{str(datetime.timedelta(milliseconds=song.duration))}`\nLink: [Open]({song.uri})"
             )
             embed.set_author(
                 name=f"{r.user.name} added track to queue:",
@@ -641,7 +646,7 @@ class Music():
             embed = discord.Embed(
                 color=0xebd8c3,
                 title=song.title,
-                description=f"Автор: {song.author}\nДлительность: `{str(datetime.timedelta(seconds=song.duration))}`\nСсылка: [Перейти]({song.uri})"
+                description=f"Автор: {song.author}\nДлительность: `{str(datetime.timedelta(milliseconds=song.duration))}`\nСсылка: [Перейти]({song.uri})"
             )
             embed.set_author(
                 name=f"{ctx.author.name} добавил трек в очередь:",
@@ -651,7 +656,7 @@ class Music():
             embed = discord.Embed(
                 color=0xebd8c3,
                 title=song.title,
-                description=f"Author: {song.author}\nDuration: `{str(datetime.timedelta(seconds=song.duration))}`\nLink: [Open]({song.uri})"
+                description=f"Author: {song.author}\nDuration: `{str(datetime.timedelta(milliseconds=song.duration))}`\nLink: [Open]({song.uri})"
             )
             embed.set_author(
                 name=f"{ctx.author.name} added track to queue:",
@@ -667,7 +672,7 @@ class Music():
             embed = discord.Embed(
                 color=0xebd8c3,
                 title=song.title,
-                description=f"Автор: {song.author}\nДлительность: `{str(datetime.timedelta(seconds=song.duration))}`\nСсылка: [Перейти]({song.uri})"
+                description=f"Автор: {song.author}\nДлительность: `{str(datetime.timedelta(milliseconds=song.duration))}`\nСсылка: [Перейти]({song.uri})"
             )
             embed.set_author(
                 name=f"{r.user.name} включил трек:",
@@ -677,7 +682,7 @@ class Music():
             embed = discord.Embed(
                 color=0xebd8c3,
                 title=song.title,
-                description=f"Author: {song.author}\nDuration: `{str(datetime.timedelta(seconds=song.duration))}`\nLink: [Open]({song.uri})"
+                description=f"Author: {song.author}\nDuration: `{str(datetime.timedelta(milliseconds=song.duration))}`\nLink: [Open]({song.uri})"
             )
             embed.set_author(
                 name=f"{r.user.name} set track:",
@@ -693,7 +698,7 @@ class Music():
             embed = discord.Embed(
                 color=0xebd8c3,
                 title=song.title,
-                description=f"Автор: {song.author}\nДлительность: `{str(datetime.timedelta(seconds=song.duration))}`\nСсылка: [Перейти]({song.uri})"
+                description=f"Автор: {song.author}\nДлительность: `{str(datetime.timedelta(milliseconds=song.duration))}`\nСсылка: [Перейти]({song.uri})"
             )
             embed.set_author(
                 name="Трек добавлен в очередь:",
@@ -703,7 +708,7 @@ class Music():
             embed = discord.Embed(
                 color=0xebd8c3,
                 title=song.title,
-                description=f"Author: {song.author}\nDuration: `{str(datetime.timedelta(seconds=song.duration))}`\nLink: [Open]({song.uri})"
+                description=f"Author: {song.author}\nDuration: `{str(datetime.timedelta(milliseconds=song.duration))}`\nLink: [Open]({song.uri})"
             )
             embed.set_author(
                 name="Track added to the queue:",
@@ -719,7 +724,7 @@ class Music():
             embed = discord.Embed(
                 color=0xebd8c3,
                 title=song.title,
-                description=f"Автор: {song.author}\nДлительность: `{str(datetime.timedelta(seconds=song.duration))}`\nСсылка: [Перейти]({song.uri})"
+                description=f"Автор: {song.author}\nДлительность: `{str(datetime.timedelta(milliseconds=song.duration))}`\nСсылка: [Перейти]({song.uri})"
             )
             embed.set_author(
                 name="Трек включён:",
@@ -729,7 +734,7 @@ class Music():
             embed = discord.Embed(
                 color=0xebd8c3,
                 title=song.title,
-                description=f"Author: {song.author}\nDuration: `{str(datetime.timedelta(seconds=song.duration))}`\nLink: [Open]({song.uri})"
+                description=f"Author: {song.author}\nDuration: `{str(datetime.timedelta(milliseconds=song.duration))}`\nLink: [Open]({song.uri})"
             )
             embed.set_author(
                 name="Track set:",
@@ -872,7 +877,7 @@ class Music():
             for song in queue:
                 embed.add_field(
                     name=f"{song_count}. {song.title}", 
-                    value=f"Автор: {song.author}\nДлительность: `{str(datetime.timedelta(seconds=song.duration))}`",
+                    value=f"Автор: {song.author}\nДлительность: `{str(datetime.timedelta(milliseconds=song.duration))}`",
                     inline=False
                     )
                 song_count += 1
@@ -888,7 +893,7 @@ class Music():
             for song in queue:
                 embed.add_field(
                     name=f"{song_count}. {song.title}",
-                    value=f"Author: {song.author}\nDuration: `{str(datetime.timedelta(seconds=song.duration))}`",
+                    value=f"Author: {song.author}\nDuration: `{str(datetime.timedelta(milliseconds=song.duration))}`",
                     inline=False
                 )
                 song_count += 1

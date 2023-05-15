@@ -19,26 +19,31 @@ class Music(commands.Cog):
 
     async def node_connect(self):
         await self.bot.wait_until_ready()
-        await wavelink.NodePool.create_node(
-            bot = self.bot, 
-            host = Config.Lavalink.host(), 
-            port = Config.Lavalink.port(), 
-            password = Config.Lavalink.password(), 
-            https = True
+
+        node: wavelink.Node = wavelink.Node(
+            uri = Config.Lavalink.URI(), 
+            password = Config.Lavalink.password(),
+            use_http = Config.Lavalink.useHTTP(),
+            secure = Config.Lavalink.secure()
+        )
+
+        await wavelink.NodePool.connect(
+            client = self.bot, 
+            nodes = [node]
         )
 
     @commands.Cog.listener()
     async def on_wavelink_node_ready(self, node: wavelink.Node):
-        Logger.log("WAVELINK", "INFO", f"Integration connected with ID: {node.identifier}")
-
-
-    @commands.Cog.listener()
-    async def on_wavelink_websocket_closed(self, player: wavelink.Player, reason, code):
-        Logger.log("WAVELINK", "WARNING", f"Integration disconnected cause of server error ({code}). Reason: {reason}")
-    
+        Logger.log("WAVELINK", "INFO", f"Integration connected with ID: {node.id}")
+        
 
     @commands.Cog.listener()
-    async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
+    async def on_voice_state_update(
+        self, 
+        member: discord.Member, 
+        before: discord.VoiceState, 
+        after: discord.VoiceState
+    ):
         try:
             guild = after.channel.guild
         except Exception:
@@ -60,9 +65,9 @@ class Music(commands.Cog):
 
 
     @commands.Cog.listener()
-    async def on_wavelink_track_end(self, player: wavelink.Player, track: wavelink.Track, reason):
+    async def on_wavelink_track_end(self, payload: wavelink.TrackEventPayload):
         try:
-            ctx = player.ctx
+            ctx = payload.player.ctx
             vc: wavelink.Player = ctx.guild.voice_client
 
             if vc is None:
@@ -72,27 +77,46 @@ class Music(commands.Cog):
                 return
 
             if vc.loop:
-                return await vc.play(track)
+                return await vc.play(payload.track)
 
             if vc.queue.is_empty:
                 await vc.message.edit(
-                    embed=Embeds.Music.player_waiting(vc.language or Functions.get_guild_locale(ctx.guild), ctx, Config.Bot.prefix)
+                    embed=Embeds.Music.player_waiting(
+                        vc.language or Functions.get_guild_locale(ctx.guild), 
+                        ctx, 
+                        Config.Bot.prefix
+                    )
                 )
                 await asyncio.sleep(30)
                 if not vc.queue.is_empty or vc.is_playing() is not False:
                     return
 
                 await vc.message.edit(
-                    embed=Embeds.Music.player_destroyed(vc.language or Functions.get_guild_locale(ctx.guild)), view=None
+                    embed=Embeds.Music.player_destroyed(
+                        vc.language or Functions.get_guild_locale(ctx.guild)
+                    ), 
+                    view=None
                 )
                 vc.cleanup()
                 return await vc.disconnect()
-            
-            vc.previous_track = track
+
+            if (isinstance(payload.track, wavelink.YouTubeTrack)):
+                vc.previous = payload.track
+            else:
+                vc.previous = await wavelink.YouTubeTrack.search(
+                    payload.track.title, return_first=True
+                )
+
             next_song = vc.queue.get()
 
             await vc.play(next_song)
-            await vc.message.edit(embed=Embeds.Music.music_player_connected(vc.language or Functions.get_guild_locale(ctx.guild), next_song, ctx))
+            await vc.message.edit(
+                embed=Embeds.Music.music_player_connected(
+                    vc.language or Functions.get_guild_locale(ctx.guild), 
+                    next_song, 
+                    ctx
+                )
+            )
 
         except Exception as error:
             Logger.log("WAVELINK", "ERROR", f"Error in on_wavelink_track_end event: {error}")
@@ -132,13 +156,13 @@ class Music(commands.Cog):
             if vc.queue.is_empty and not vc.is_playing():
                 if not hasattr(vc, "message_id") or not hasattr(vc, "message"):
                     try:
-                        song = await wavelink.YouTubeTrack.search(query=song, return_first=True)
+                        song = await wavelink.YouTubeTrack.search(song, return_first=True)
                     except:
                         return await ctx.reply(
                             embed=Embeds.Music.song_not_found(user.language), mention_author=False
                         )
 
-                    if int(song.duration) > 3600:
+                    if int(song.duration) > 3600000:
                         return await ctx.send(embed=Embeds.Music.song_is_too_long(user.language))
 
                     await vc.play(song)
@@ -150,16 +174,18 @@ class Music(commands.Cog):
                     setattr(vc, "message_id", msg.id)
                     setattr(vc, "message", msg)
 
-                    await msg.edit(
-                        view=Views.Player(self.bot, ctx, msg, vc)
-                    )
+                    await msg.edit(view=Views.Player(self.bot, ctx, msg, vc))
                 else:
                     try:
-                        song = await wavelink.YouTubeTrack.search(query=song, return_first=True)
+                        song = await wavelink.YouTubeTrack.search(song, return_first=True)
                     except:
                         return await ctx.reply(
                             embed=Embeds.Music.song_not_found(user.language), mention_author=False
                         )
+                    
+                    if int(song.duration) > 3600000:
+                        return await ctx.send(embed=Embeds.Music.song_is_too_long(user.language))
+
                     await vc.message.edit(
                         embed=Embeds.Music.music_player_connected(vc.language, song, ctx)
                     )
@@ -168,14 +194,21 @@ class Music(commands.Cog):
                     )
                     await vc.play(song)
 
-                await ctx.guild.change_voice_state(channel=ctx.author.voice.channel, self_deaf=True, self_mute=False)
+                await ctx.guild.change_voice_state(
+                    channel=ctx.author.voice.channel, self_deaf=True, self_mute=False
+                )
             else:
                 try:
-                    song = await wavelink.YouTubeTrack.search(query=song, return_first=True)
-                except:
+                    song = await wavelink.YouTubeTrack.search(song, return_first=True)
+                except Exception as e:
+                    print(e)
                     return await ctx.reply(
                         embed=Embeds.Music.song_not_found(user.language), mention_author=False
                     )
+                
+                if int(song.duration) > 3600000:
+                    return await ctx.send(embed=Embeds.Music.song_is_too_long(user.language))
+
                 await vc.queue.put_wait(song)
                 await ctx.reply(
                     embed=Embeds.Music.track_added_ctx(user.language, ctx, song), mention_author=False
@@ -188,8 +221,8 @@ class Music(commands.Cog):
                 setattr(vc, "language", user.language)
             if not hasattr(vc, "notifications_level"):
                 setattr(vc, "notifications_level", 2)
-            if not hasattr(vc, "previous_track"):
-                setattr(vc, "previous_track", None)
+            if not hasattr(vc, "previous"):
+                setattr(vc, "previous", None)
 
         except Exception as error:
             command_error_log(ctx, error, "play", "default")
@@ -366,12 +399,12 @@ class Music(commands.Cog):
                     embed=Embeds.Music.looped(user.language), mention_author=False
                 )
             
-            track = vc.track
-            vc.previous_track = track
+            track = vc.current
+            vc.previous = track
 
-            postition = int(vc.track.length) * 10000
+            postition = int(vc.current.length) * 10000
             await vc.seek(position=postition)
-            song = vc.track
+            song = vc.current
 
             await vc.message.edit(
                 embed=Embeds.Music.music_player_connected(vc.language, song, ctx)
@@ -468,21 +501,19 @@ class Music(commands.Cog):
                     embed=Embeds.Music.looped(user.language), mention_author=False
                 )
 
-            if vc.previous_track is not None:
-                track = await wavelink.YouTubeTrack.search(query=vc.track.title, return_first=True)
-                previous_track = await wavelink.YouTubeTrack.search(query=vc.previous_track.title, return_first=True)
+            if vc.previous is not None:
+                vc.queue.put_at_front(vc.current)
+                vc.queue.put_at_front(vc.previous)
 
-                vc.queue.put_at_front(track)
-                vc.queue.put_at_front(previous_track)
-
-                vc.previous_track = None
-
-                postition = int(vc.track.length) * 10000
+                postition = int(vc.current.length) * 10000
                 await vc.seek(position=postition)
 
                 await vc.message.edit(
-                    embed=Embeds.Music.music_player_connected(vc.language, previous_track, ctx)
+                    embed=Embeds.Music.music_player_connected(vc.language, vc.previous, ctx)
                 )
+
+                vc.previous = None
+
                 if vc.notifications_level in [1, 2]:
                     return await ctx.reply(
                         embed=Embeds.Music.returned_ctx(user.language), mention_author=False
@@ -694,7 +725,7 @@ class Music(commands.Cog):
             if vc.queue.is_empty and not vc.is_playing():
                 if not hasattr(vc, "message_id") and not hasattr(vc, "message"):
                     try:
-                        song = await wavelink.YouTubeTrack.search(query=song, return_first=True)
+                        song = await wavelink.YouTubeTrack.search(song, return_first=True)
                     except:
                         return await ctx.followup.send(
                             embed=Embeds.Music.song_not_found(user.language)
@@ -713,13 +744,11 @@ class Music(commands.Cog):
                     setattr(vc, "message_id", msg.id)
                     setattr(vc, "message", msg)
 
-                    await msg.edit(
-                        view=Views.Player(self.bot, ctx, msg, vc)
-                    )
+                    await msg.edit(iew=Views.Player(self.bot, ctx, msg, vc))
                 else:
                     try:
                         try:
-                            song = await wavelink.YouTubeTrack.search(query=song, return_first=True)
+                            song = await wavelink.YouTubeTrack.search(song, return_first=True)
                         except:
                             return await ctx.followup.send(
                                 embed=Embeds.Music.song_not_found(user.language)
@@ -739,7 +768,7 @@ class Music(commands.Cog):
                 await ctx.guild.change_voice_state(channel=ctx.author.voice.channel, self_deaf=True, self_mute=False)
             else:
                 try:
-                    song = await wavelink.YouTubeTrack.search(query=song, return_first=True)
+                    song = await wavelink.YouTubeTrack.search(song, return_first=True)
                 except:
                     return await ctx.followup.send(
                         embed=Embeds.Music.song_not_found(user.language)
@@ -756,8 +785,8 @@ class Music(commands.Cog):
                 setattr(vc, "language", user.language)
             if not hasattr(vc, "notifications_level"):
                 setattr(vc, "notifications_level", 2)
-            if not hasattr(vc, "previous_track"):
-                setattr(vc, "previous_track", None)
+            if not hasattr(vc, "previous"):
+                setattr(vc, "previous", None)
 
         except Exception as error:
             command_error_log(ctx, error, "play", "slash")
@@ -907,12 +936,12 @@ class Music(commands.Cog):
                     embed=Embeds.Music.looped(user.language)
                 )
 
-            track = vc.track
-            vc.previous_track = track
+            track = vc.current
+            vc.previous = track
 
-            postition = int(vc.track.length) * 10000
+            postition = int(vc.current.length) * 10000
             await vc.seek(position=postition)
-            song = vc.track
+            song = vc.current
 
             await vc.message.edit(
                 embed=Embeds.Music.music_player_connected(vc.language, song, ctx)
@@ -1017,21 +1046,19 @@ class Music(commands.Cog):
                     embed=Embeds.Music.looped(user.language)
                 )
 
-            if vc.previous_track is not None:
-                track = await wavelink.YouTubeTrack.search(query=vc.track.title, return_first=True)
-                previous_track = await wavelink.YouTubeTrack.search(query=vc.previous_track.title, return_first=True)
+            if vc.previous is not None:
+                vc.queue.put_at_front(vc.current)
+                vc.queue.put_at_front(vc.previous)
 
-                vc.queue.put_at_front(track)
-                vc.queue.put_at_front(previous_track)
-
-                vc.previous_track = None
-
-                postition = int(vc.track.length) * 10000
+                postition = int(vc.current.length) * 10000
                 await vc.seek(position=postition)
 
                 await vc.message.edit(
-                    embed=Embeds.Music.music_player_connected(vc.language, previous_track, ctx)
+                    embed=Embeds.Music.music_player_connected(vc.language, vc.previous, ctx)
                 )
+
+                vc.previous = None
+                
                 if vc.notifications_level in [1, 2]:
                     return await ctx.followup.send(
                         embed=Embeds.Music.returned_ctx(user.language)

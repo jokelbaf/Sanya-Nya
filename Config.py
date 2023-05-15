@@ -78,8 +78,14 @@ class Bot:
 # Lavalink.jar - https://ci.fredboat.com/viewLog.html?buildId=lastSuccessful&buildTypeId=Lavalink_Build&tab=artifacts&guest=1
 # application.yml - https://github.com/freyacodes/Lavalink#server-configuration
 class Lavalink:
-    def host() -> str: return os.getenv("LAVALINK_HOST")
+    # Example: https://yourhost.com:8080
+    def URI() -> str: return os.getenv("LAVALINK_URI")
     
-    def port() -> int: return os.getenv("LAVALINK_PORT")
-    
+    # Example: abc1234
     def password() -> str: return os.getenv("LAVALINK_PWD")
+    
+    # Should bot use http(s):// or ws://
+    def useHTTP() -> str: return os.getenv("LAVALINK_USE_HTTP")
+
+    # Is the domain secured with certificate
+    def secure() -> str: return os.getenv("LAVALINK_SECURE")
