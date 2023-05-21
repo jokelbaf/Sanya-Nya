@@ -731,7 +731,7 @@ class Music(commands.Cog):
                             embed=Embeds.Music.song_not_found(user.language)
                         )
 
-                    if int(song.duration) > 3600:
+                    if int(song.duration) > 3600000:
                         return await ctx.followup.send(
                             embed=Embeds.Music.song_is_too_long(user.language)
                         )
