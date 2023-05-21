@@ -28,7 +28,7 @@ class BotInfo():
             embed = discord.Embed(
                 color=0xebd8c3,
                 title="Помощь",
-                description=f"**Описание бота:** Саня стал кошкодевочкой-диджеем и теперь включает вам музыку с ютуба.\n\n**Репозиторий с исходным кодом:**\nhttps://github.com/RealSosiso4ka/Sanya-Nya",
+                description=f"Саня стал кошкодевочкой-диджеем и теперь включает вам музыку с ютуба.\n\n**Репозиторий с исходным кодом:**\nhttps://github.com/JokelBaf/Sanya-Nya",
                 timestamp=dt.now()
             )
             cmds = ""
@@ -56,7 +56,7 @@ class BotInfo():
             embed = discord.Embed(
                 color=0xebd8c3,
                 title="Help",
-                description=f"**Bot description:** Sanya became neko girl DJ and now plays music from YouTube for you.\n\n**Source code:**\nhttps://github.com/RealSosiso4ka/Sanya-Nya",
+                description=f"Sanya became neko girl DJ and now plays music from YouTube for you.\n\n**Source code:**\nhttps://github.com/JokelBaf/Sanya-Nya",
                 timestamp=dt.now()
             )
             cmds = ""
