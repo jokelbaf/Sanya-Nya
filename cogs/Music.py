@@ -744,7 +744,7 @@ class Music(commands.Cog):
                     setattr(vc, "message_id", msg.id)
                     setattr(vc, "message", msg)
 
-                    await msg.edit(iew=Views.Player(self.bot, ctx, msg, vc))
+                    await msg.edit(view=Views.Player(self.bot, ctx, msg, vc))
                 else:
                     try:
                         try:
