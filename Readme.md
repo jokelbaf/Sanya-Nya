@@ -1,11 +1,18 @@
-![Image](https://media.discordapp.net/attachments/1029785771839864852/1029785831180877864/banner.gif) 
+<img src="https://github.com/JokelBaf/Sanya-Nya/assets/60827680/e9c74055-d5b9-4c13-805a-8bd252fb1eb6">
 
-![](https://img.shields.io/badge/bot_version-v1.1.0-%23ebd8c3?style=for-the-badge&logo=python&logoColor=white)  ![](https://img.shields.io/badge/bot_language-russian_/_english-%23c5d9d7?style=for-the-badge)
+![](https://img.shields.io/badge/bot_version-v1.1.0-%23ebd8c3?style=for-the-badge&logo=python&logoColor=white) ![](https://img.shields.io/badge/bot_languages-russian_/_english-%23c5d9d7?style=for-the-badge) ![](https://img.shields.io/badge/maintained-yes-%d4a36e?style=for-the-badge) 
 ****
 
-This is a repo with source code for Sanya-nya Discord bot. It plays music from YouTube and works both on slash and prefixed commands.
+This is a repo with source code for Sanya-nya Discord bot. It plays music from YouTube and works both on slash and prefixed commands. You can invite the official version of Sanya-nya [here](https://discord.com/api/oauth2/authorize?client_id=1028248893600841748&permissions=2184563712&scope=bot%20applications.commands). Or host your own instance of Sanya-nya with the button below:
 
-You can invite the official version of Sanya-nya [here](https://discord.com/api/oauth2/authorize?client_id=1028248893600841748&permissions=2184563712&scope=bot%20applications.commands).
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/W-FL4b?referralCode=XzPSfV)
+
+# Overview
+<img src="https://github.com/JokelBaf/Sanya-Nya/assets/60827680/215393c3-7241-4ff8-bf91-248eb1e09a89" width="900">
+
+# Screenshots
+<img src="https://github.com/JokelBaf/Sanya-Nya/assets/60827680/ba328ccc-5b35-4976-acf0-1d4628147a01" width="450">
+<img src="https://github.com/JokelBaf/Sanya-Nya/assets/60827680/01cb66f7-8cf6-4b66-89f2-3989a1befbb2" width="450">
 
 # Commands
 List of all bot's commands and their description.
@@ -26,15 +33,20 @@ List of all bot's commands and their description.
 - `language` - Change Bot's language for yourself
 
 # Hosting bot by yourself
-This bot is completely ready to be hosted on Railway: 
-1. Clone this repo.
-2. Check `Config.py` to configure your bot. You **must** set everything inside Lavalink class there.
-3. Create an application on [Discord Developer Portal](https://discord.com/developers/applications).
-4. Add this newly created bot to your server. Invite url can be generated on application settings page.
-5. Go to [railway.app](https://railway.app), connect your GitHub account and deploy your cloned repo.
-6. Set your bot token as an environmental variable named `BOT_TOKEN` on Railway.
-7. In the same Railway project as your bot is located, add Postgres database service..
-8. You are done!
+This bot is completely ready to be hosted on Railway:
+1. Click `Deploy on Railway` button above.
+2. Follow instructions to deploy the bot to Railway.
+3. Remember to set environmental variables like `BOT_TOKEN`, `LAVALINK_URI` to yours.
+4. If you don't have a Discord bot you can create it on [Discord Developer Portal](https://discord.com/developers/applications).
+5. Remember to add your bot to your server. Invite url can be generated on application settings page.
+6. Now, when your bot is deployed and all variables are set, you need to set custom build command ([here](https://github.com/JokelBaf/Sanya-Nya/issues/5#issuecomment-1556309834) is why):
+  - Go to your railway project **Settings**.
+  - Find field named **Build command**.
+  - Paste the following text there:
+  ```
+  pip uninstall -y discord.py && pip uninstall -y py-cord && pip install py-cord
+  ```
+7. That's all! Your bot should now be up and running.
 
 **Important:** If you are going to host this bot by yourself, I highly recommend to use **your** lavalink server hosted by **you** or on a **hosting**. I'm too lazy to look for ways of doing it but you should definitely come up with something.
 
