@@ -12,7 +12,7 @@ This is a repo with source code for Sanya-nya Discord bot. It plays music from Y
 
 # Screenshots
 <img src="https://github.com/JokelBaf/Sanya-Nya/assets/60827680/ba328ccc-5b35-4976-acf0-1d4628147a01" width="450">
-<img src="https://github.com/JokelBaf/Sanya-Nya/assets/60827680/01cb66f7-8cf6-4b66-89f2-3989a1befbb2" width="450">
+<img src="https://github.com/JokelBaf/Sanya-Nya/assets/60827680/92bdab02-43db-402d-a3da-c409338a40d2" width="450">
 
 # Commands
 List of all bot's commands and their description.
