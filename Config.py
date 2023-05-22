@@ -39,7 +39,8 @@ class Bot:
                 ["volume", "Изменить громкость плеера"],
                 ["resume", "Возобновить проигрывание"],
                 ["replay", "Проиграть текущий трек заново"],
-                ["previous", "Включить предыдущий трек"]
+                ["previous", "Включить предыдущий трек"],
+                ["language", "Изменить язык сани"]
             ]
         else:
             return [
@@ -55,7 +56,8 @@ class Bot:
                 ["volume", "Change player volume"],
                 ["resume", "Resume playback"],
                 ["replay", "Replay track"],
-                ["previous", "Play previous track"]
+                ["previous", "Play previous track"],
+                ["language", "Change bot language for yourself"]
             ]
 
     # You can change bot prefix here.
