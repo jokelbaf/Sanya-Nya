@@ -44,7 +44,8 @@ class SongModal(Modal):
                 )
 
             try:
-                song = await wavelink.YouTubeTrack.search(self.children[0].value, return_first=True)
+                songs = await wavelink.YouTubeTrack.search(self.children[0].value)
+                song = songs[0]
             except:
                 return await r.followup.send(
                     embed=Embeds.Music.song_not_found(user.language)

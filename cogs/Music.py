@@ -51,7 +51,6 @@ class Music(commands.Cog):
 
         vc: wavelink.Player = guild.voice_client
         if before.channel is not None and after.channel is None and guild.voice_client and len(before.channel.members) < 2:
-            vc.cleanup()
             await vc.disconnect()
                 
             Logger.log("MUSIC", "INFO", f"All users left VC of guild with ID {member.guild.id}. Bot disconnected.")
@@ -97,15 +96,13 @@ class Music(commands.Cog):
                     ), 
                     view=None
                 )
-                vc.cleanup()
                 return await vc.disconnect()
 
             if (isinstance(payload.track, wavelink.YouTubeTrack)):
                 vc.previous = payload.track
             else:
-                vc.previous = await wavelink.YouTubeTrack.search(
-                    payload.track.title, return_first=True
-                )
+                songs = await wavelink.YouTubeTrack.search(payload.track.title)
+                vc.previous = songs[0]
 
             next_song = vc.queue.get()
 
@@ -156,7 +153,8 @@ class Music(commands.Cog):
             if vc.queue.is_empty and not vc.is_playing():
                 if not hasattr(vc, "message_id") or not hasattr(vc, "message"):
                     try:
-                        song = await wavelink.YouTubeTrack.search(song, return_first=True)
+                        songs = await wavelink.YouTubeTrack.search(song)
+                        song = songs[0]
                     except:
                         return await ctx.reply(
                             embed=Embeds.Music.song_not_found(user.language), mention_author=False
@@ -177,7 +175,7 @@ class Music(commands.Cog):
                     await msg.edit(view=Views.Player(self.bot, ctx, msg, vc))
                 else:
                     try:
-                        song = await wavelink.YouTubeTrack.search(song, return_first=True)
+                        song = (await wavelink.YouTubeTrack.search(song))[0]
                     except:
                         return await ctx.reply(
                             embed=Embeds.Music.song_not_found(user.language), mention_author=False
@@ -199,7 +197,8 @@ class Music(commands.Cog):
                 )
             else:
                 try:
-                    song = await wavelink.YouTubeTrack.search(song, return_first=True)
+                    songs = await wavelink.YouTubeTrack.search(song)
+                    song = songs[0]
                 except Exception as e:
                     print(e)
                     return await ctx.reply(
@@ -446,7 +445,6 @@ class Music(commands.Cog):
                 vc: wavelink.Player = ctx.guild.voice_client
 
             await vc.stop()
-            vc.cleanup()
             await vc.disconnect()
 
             try:
@@ -725,7 +723,8 @@ class Music(commands.Cog):
             if vc.queue.is_empty and not vc.is_playing():
                 if not hasattr(vc, "message_id") and not hasattr(vc, "message"):
                     try:
-                        song = await wavelink.YouTubeTrack.search(song, return_first=True)
+                        songs = await wavelink.YouTubeTrack.search(song)
+                        song = songs[0]
                     except:
                         return await ctx.followup.send(
                             embed=Embeds.Music.song_not_found(user.language)
@@ -748,7 +747,8 @@ class Music(commands.Cog):
                 else:
                     try:
                         try:
-                            song = await wavelink.YouTubeTrack.search(song, return_first=True)
+                            songs = await wavelink.YouTubeTrack.search(song)
+                            song = songs[0]
                         except:
                             return await ctx.followup.send(
                                 embed=Embeds.Music.song_not_found(user.language)
@@ -768,7 +768,8 @@ class Music(commands.Cog):
                 await ctx.guild.change_voice_state(channel=ctx.author.voice.channel, self_deaf=True, self_mute=False)
             else:
                 try:
-                    song = await wavelink.YouTubeTrack.search(song, return_first=True)
+                    songs = await wavelink.YouTubeTrack.search(song)
+                    song = songs[0]
                 except:
                     return await ctx.followup.send(
                         embed=Embeds.Music.song_not_found(user.language)
@@ -988,7 +989,6 @@ class Music(commands.Cog):
                 vc: wavelink.Player = ctx.guild.voice_client
 
             await vc.stop()
-            vc.cleanup()
             await vc.disconnect()
 
             try:
