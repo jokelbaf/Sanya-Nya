@@ -1,5 +1,5 @@
 cachetools==5.3.1
-aioconsole==0.6.1
+aioconsole==0.6.2
 asyncpg==0.28.0
 wavelink==2.6.0
 py-cord==2.4.1
